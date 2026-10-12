@@ -8,12 +8,14 @@ import {
 } from './device-credentials'
 import {
 	accountsPhase,
+	catchupMeasurementsPhase,
 	devicesPhase,
 	finalizePhase,
 	integrationsPhase,
 	measurementsPhase,
 	mediaPhase,
 	newPhaseResult,
+	prepareCatchupTargets,
 	throwIfAborted,
 } from './phases'
 import {
@@ -44,6 +46,7 @@ export async function runMigration(
 	dependencies: MigrationDependencies,
 ) {
 	throwIfAborted(dependencies)
+	const mode = config.mode ?? 'single'
 	if (config.sourceKind === 'restored-backup' && !config.backupId) {
 		throw new Error('A restored-backup migration requires a backup ID')
 	}
@@ -57,7 +60,7 @@ export async function runMigration(
 			'Production MongoDB is restricted to an explicit read-only preflight',
 		)
 	}
-	if (!config.dryRun && !config.writeFreezeConfirmed) {
+	if (!config.dryRun && mode !== 'baseline' && !config.writeFreezeConfirmed) {
 		throw new Error(
 			'Production write freeze must be confirmed with --confirm-write-freeze',
 		)
@@ -95,13 +98,52 @@ export async function runMigration(
 	)
 	await recordExpectedEntities(config, dependencies, snapshot)
 	await preflight(config, dependencies, snapshot, sourceFingerprint)
-	await bootstrapLegacyResumeProgress(config, dependencies, snapshot)
+	let existingPreflightProgress = config.dryRun
+		? null
+		: await dependencies.app.phaseProgress(config.runId, 'preflight')
+	if (
+		!config.dryRun &&
+		mode === 'catchup' &&
+		existingPreflightProgress?.status !== 'completed' &&
+		existingPreflightProgress?.cursor?.stage !==
+			'catchup-baseline-seal-verified'
+	) {
+		const result = newPhaseResult('preflight', existingPreflightProgress)
+		result.sourceSeen = snapshot.users.length + snapshot.boxes.length
+		result.written =
+			snapshot.retainedUserIds.size + snapshot.migratableDeviceIds.size
+		result.rejected = snapshot.anomalies.length
+		const cursor = { stage: 'catchup-baseline-seal-verified' }
+		await dependencies.app.savePhaseProgress(
+			config.runId,
+			result,
+			'running',
+			cursor,
+		)
+		existingPreflightProgress = {
+			...result,
+			status: 'running',
+			cursor,
+		}
+	}
 	const validationAlreadyCompleted =
 		config.resume &&
 		!config.dryRun &&
 		(await dependencies.app.phaseProgress(config.runId, 'validate'))?.status ===
 			'completed'
 
+	if (
+		!config.dryRun &&
+		mode === 'catchup' &&
+		config.manageJobs &&
+		config.parentRunId &&
+		!validationAlreadyCompleted
+	) {
+		await dependencies.app.inheritBackgroundJobs(
+			config.parentRunId,
+			config.runId,
+		)
+	}
 	if (!config.dryRun && config.manageJobs && !validationAlreadyCompleted) {
 		const jobs = await dependencies.app.pauseBackgroundJobs(config.runId)
 		if (!jobs.some((job) => job.name === 'device-archive-inactive')) {
@@ -118,6 +160,12 @@ export async function runMigration(
 			message:
 				'Timescale retention/refresh and pg_cron jobs must be paused and restored by the cutover operator',
 		})
+	}
+	if (mode === 'catchup' && existingPreflightProgress?.status !== 'completed') {
+		await prepareCatchupTargets(config, dependencies, snapshot)
+	}
+	if (mode !== 'catchup') {
+		await bootstrapLegacyResumeProgress(config, dependencies, snapshot)
 	}
 
 	for (const phase of PHASES.filter((item) => config.phases.includes(item))) {
@@ -179,12 +227,15 @@ export async function runMigration(
 				result = await devicesPhase(config, dependencies, snapshot, progress)
 				break
 			case 'measurements':
-				result = await measurementsPhase(
-					config,
-					dependencies,
-					snapshot,
-					progress,
-				)
+				result =
+					mode === 'catchup'
+						? await catchupMeasurementsPhase(
+								config,
+								dependencies,
+								snapshot,
+								progress,
+							)
+						: await measurementsPhase(config, dependencies, snapshot, progress)
 				break
 			case 'integrations':
 				result = await integrationsPhase(
@@ -232,6 +283,7 @@ export const migrationInternals = {
 	assertProgressBoundary,
 	devicesPhase,
 	measurementsPhase,
+	catchupMeasurementsPhase,
 	integrationsPhase,
 	mediaPhase,
 	validatePhase,

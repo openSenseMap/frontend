@@ -95,10 +95,13 @@ export class DeviceImageStore {
 		const extension = path.extname(sourceFilename).toLowerCase()
 		const contentType = CONTENT_TYPES[extension]
 		if (!contentType) throw new Error('Legacy image type is unsupported')
+		const sha256 = await hashFile(sourcePath)
 		return {
 			sourcePath,
-			key: `devices/${deviceId}${extension}`,
-			sha256: await hashFile(sourcePath),
+			// Content-addressed keys let a catchup publish changed media without
+			// overwriting the baseline object that may still be needed for rollback.
+			key: `devices/${deviceId}/${sha256}${extension}`,
+			sha256,
 			bytes: sourceStat.size,
 			contentType,
 		}

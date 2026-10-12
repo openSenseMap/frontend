@@ -16,7 +16,7 @@ import {
 	type Rejection,
 } from './types'
 
-const SCRIPT_VERSION = '0.7.0'
+const SCRIPT_VERSION = '0.8.0'
 export const ORPHAN_USER_ID = 'system_orphan_user'
 
 const MIGRATION_CAGGS = [
@@ -38,6 +38,52 @@ const REQUIRED_BACKGROUND_JOB_NAMES = [
 ]
 
 const BACKGROUND_JOB_IDLE_TIMEOUT_MS = 5 * 60 * 1_000
+
+type AggregateBucket = '10 minutes' | '1 hour' | '1 day' | '1 month' | '1 year'
+
+function aggregateBucketStart(date: Date, bucket: AggregateBucket) {
+	const result = new Date(date)
+	result.setUTCMilliseconds(0)
+	if (bucket === '10 minutes') {
+		result.setUTCSeconds(0)
+		result.setUTCMinutes(Math.floor(result.getUTCMinutes() / 10) * 10)
+	} else if (bucket === '1 hour') {
+		result.setUTCMinutes(0, 0, 0)
+	} else if (bucket === '1 day') {
+		result.setUTCHours(0, 0, 0, 0)
+	} else if (bucket === '1 month') {
+		result.setUTCHours(0, 0, 0, 0)
+		result.setUTCDate(1)
+	} else {
+		result.setUTCHours(0, 0, 0, 0)
+		result.setUTCMonth(0, 1)
+	}
+	return result
+}
+
+/**
+ * A catchup may advance into the baseline's already-partial leading bucket. It
+ * may not cut through a later complete bucket, because refreshing that bucket
+ * after raw pruning would publish an apparently complete partial aggregate.
+ */
+function unsafeCatchupAggregateBoundaries(parentFrom: Date, childFrom: Date) {
+	const buckets: AggregateBucket[] = [
+		'10 minutes',
+		'1 hour',
+		'1 day',
+		'1 month',
+		'1 year',
+	]
+	return buckets.filter((bucket) => {
+		const childBucket = aggregateBucketStart(childFrom, bucket)
+		if (childBucket.getTime() === childFrom.getTime()) return false
+		const parentBucket = aggregateBucketStart(parentFrom, bucket)
+		const sharesSkippedLeadingBucket =
+			parentBucket.getTime() !== parentFrom.getTime() &&
+			parentBucket.getTime() === childBucket.getTime()
+		return !sharesSkippedLeadingBucket
+	})
+}
 
 type TimescaleJobCatalogRow = {
 	jobId: number
@@ -289,10 +335,14 @@ export class AppTarget {
 			await tx`
 				CREATE TABLE IF NOT EXISTS osem_migration.run (
 					id text PRIMARY KEY,
+					migration_id text NOT NULL,
+					mode text NOT NULL CHECK (mode IN ('single', 'baseline', 'catchup')),
+					parent_run_id text,
 					script_version text NOT NULL,
 					source_fingerprint jsonb NOT NULL,
 					config_hash text NOT NULL,
 					from_time timestamptz NOT NULL,
+					measurement_import_from timestamptz NOT NULL,
 					to_time timestamptz NOT NULL,
 					archive_before timestamptz NOT NULL,
 					status text NOT NULL CHECK (status IN ('running', 'failed', 'completed')),
@@ -305,6 +355,33 @@ export class AppTarget {
 					completed_at timestamptz,
 					CHECK (from_time < to_time)
 				)
+			`
+			await tx`
+				ALTER TABLE osem_migration.run
+				ADD COLUMN IF NOT EXISTS migration_id text
+			`
+			await tx`
+				ALTER TABLE osem_migration.run
+				ADD COLUMN IF NOT EXISTS mode text NOT NULL DEFAULT 'single'
+			`
+			await tx`
+				ALTER TABLE osem_migration.run
+				ADD COLUMN IF NOT EXISTS parent_run_id text
+			`
+			await tx`
+				ALTER TABLE osem_migration.run
+				ADD COLUMN IF NOT EXISTS measurement_import_from timestamptz
+			`
+			await tx`
+				UPDATE osem_migration.run
+				SET migration_id = COALESCE(migration_id, id),
+					measurement_import_from = COALESCE(measurement_import_from, from_time)
+				WHERE migration_id IS NULL OR measurement_import_from IS NULL
+			`
+			await tx`
+				ALTER TABLE osem_migration.run
+				ALTER COLUMN migration_id SET NOT NULL,
+				ALTER COLUMN measurement_import_from SET NOT NULL
 			`
 			await tx`
 				ALTER TABLE osem_migration.run
@@ -321,6 +398,10 @@ export class AppTarget {
 			await tx`
 				CREATE UNIQUE INDEX IF NOT EXISTS osem_migration_one_running
 				ON osem_migration.run ((1)) WHERE status = 'running'
+			`
+			await tx`
+				CREATE INDEX IF NOT EXISTS osem_migration_lineage
+				ON osem_migration.run (migration_id, mode, started_at)
 			`
 			await tx`
 				CREATE TABLE IF NOT EXISTS osem_migration.rejection (
@@ -408,6 +489,21 @@ export class AppTarget {
 		sourceFingerprint: Record<string, unknown>,
 	) {
 		if (this.dryRun) return
+		const mode = config.mode ?? 'single'
+		const measurementImportFrom = config.measurementImportFrom ?? config.from
+		let migrationId = config.runId
+		if (mode === 'catchup') {
+			const [parent] = await this.sql<Array<{ migrationId: string }>>`
+				SELECT migration_id AS "migrationId"
+				FROM osem_migration.run WHERE id = ${config.parentRunId ?? ''}
+			`
+			if (!parent) {
+				throw new Error(
+					`Catchup parent run ${config.parentRunId ?? '[missing]'} does not exist`,
+				)
+			}
+			migrationId = parent.migrationId
+		}
 		const [existing] = await this.sql<
 			Array<{
 				id: string
@@ -415,11 +511,14 @@ export class AppTarget {
 				scriptVersion: string
 				configHash: string
 				sourceFingerprint: Record<string, unknown>
+				mode: string
+				parentRunId: string | null
 			}>
 		>`
 			SELECT id, status, script_version AS "scriptVersion",
 				config_hash AS "configHash",
-				source_fingerprint AS "sourceFingerprint"
+				source_fingerprint AS "sourceFingerprint", mode,
+				parent_run_id AS "parentRunId"
 			FROM osem_migration.run WHERE id = ${config.runId}
 		`
 		if (config.resume) {
@@ -437,6 +536,14 @@ export class AppTarget {
 			if (existing.configHash !== configHash) {
 				throw new Error(
 					'Resume configuration does not match the original migration run',
+				)
+			}
+			if (
+				existing.mode !== mode ||
+				existing.parentRunId !== (config.parentRunId ?? null)
+			) {
+				throw new Error(
+					'Resume stage lineage does not match the original migration run',
 				)
 			}
 			if (
@@ -462,11 +569,14 @@ export class AppTarget {
 		}
 		await this.sql`
 			INSERT INTO osem_migration.run (
-				id, script_version, source_fingerprint, config_hash,
-				from_time, to_time, archive_before, status
+				id, migration_id, mode, parent_run_id, script_version,
+				source_fingerprint, config_hash, from_time,
+				measurement_import_from, to_time, archive_before, status
 			) VALUES (
-				${config.runId}, ${SCRIPT_VERSION}, ${this.sql.json(json(sourceFingerprint))},
-				${configHash}, ${config.from}, ${config.to}, ${config.archiveBefore}, 'running'
+				${config.runId}, ${migrationId}, ${mode}, ${config.parentRunId ?? null},
+				${SCRIPT_VERSION}, ${this.sql.json(json(sourceFingerprint))},
+				${configHash}, ${config.from}, ${measurementImportFrom}, ${config.to},
+				${config.archiveBefore}, 'running'
 			)
 		`
 	}
@@ -558,11 +668,51 @@ export class AppTarget {
 		`
 	}
 
+	/** Rejects evidence that vNext served traffic while the migration target was dark. */
+	private async assertDarkTargetRuntimeState(context: string) {
+		const [counts] = await this.sql<
+			Array<{
+				refreshTokens: string
+				tokenRevocations: string
+				actionTokens: string
+				profileImages: string
+				tosStates: string
+				claims: string
+				logEntries: string
+				deviceSchemas: string
+				deviceSchemaVersions: string
+			}>
+		>`
+			SELECT
+				(SELECT count(*)::text FROM refresh_token) AS "refreshTokens",
+				(SELECT count(*)::text FROM token_revocation) AS "tokenRevocations",
+				(SELECT count(*)::text FROM action_token) AS "actionTokens",
+				(SELECT count(*)::text FROM profile_image) AS "profileImages",
+				(SELECT count(*)::text FROM tos_user_state) AS "tosStates",
+				(SELECT count(*)::text FROM claim) AS claims,
+				(SELECT count(*)::text FROM log_entry) AS "logEntries",
+				(SELECT count(*)::text FROM device_schema) AS "deviceSchemas",
+				(SELECT count(*)::text FROM device_schema_version)
+					AS "deviceSchemaVersions"
+		`
+		const unexpected = Object.entries(counts).filter(
+			([, count]) => count !== '0',
+		)
+		if (unexpected.length > 0) {
+			throw new Error(
+				`${context} contains runtime state and was not kept dark: ${unexpected
+					.map(([name, count]) => `${name}=${count}`)
+					.join(', ')}`,
+			)
+		}
+	}
+
 	/**
 	 * Protects a fresh run from mixing with existing application data while permitting
 	 * only a correctly shaped, unauthenticated reserved orphan user.
 	 */
 	async assertTargetEmpty() {
+		await this.assertDarkTargetRuntimeState('Target App database')
 		const orphanRows = await this.sql<
 			Array<{ id: string; name: string; email: string; role: string | null }>
 		>`
@@ -625,6 +775,7 @@ export class AppTarget {
 	 * measurement window, preventing accidental adoption of unrelated data.
 	 */
 	async assertResumeTarget(runId: string, from: Date, to: Date) {
+		await this.assertDarkTargetRuntimeState('Migration resume target')
 		const orphanRows = await this.sql<
 			Array<{ id: string; name: string; email: string; role: string | null }>
 		>`
@@ -695,6 +846,421 @@ export class AppTarget {
 					.map(([name, count]) => `${name}=${count}`)
 					.join(', ')}`,
 			)
+		}
+	}
+
+	/** Loads the stable source IDs recorded for one stage and entity type. */
+	async entityIds(runId: string, entity: string) {
+		const rows = await this.sql<Array<{ sourceId: string }>>`
+			SELECT source_id AS "sourceId"
+			FROM osem_migration.entity
+			WHERE run_id = ${runId} AND entity = ${entity}
+			ORDER BY source_id
+		`
+		return rows.map((row) => row.sourceId)
+	}
+
+	/** Loads the immutable measurement bounds recorded for one migration stage. */
+	async migrationRunWindow(runId: string) {
+		const [row] = await this.sql<Array<{ from: Date; to: Date }>>`
+			SELECT from_time AS "from", to_time AS "to"
+			FROM osem_migration.run WHERE id = ${runId}
+		`
+		if (!row) throw new Error(`Migration run ${runId} does not exist`)
+		return row
+	}
+
+	/**
+	 * Proves that a catchup is linked to a completed baseline at the requested
+	 * boundary. The final retention window may move forward, but never backward.
+	 */
+	async assertCatchupLineage(config: MigrationConfig) {
+		if ((config.mode ?? 'single') !== 'catchup' || !config.parentRunId) {
+			throw new Error('Catchup lineage requires an explicit baseline run')
+		}
+		const [parent] = await this.sql<
+			Array<{
+				mode: string
+				status: string
+				fromTime: Date
+				toTime: Date
+				jobsState: string
+				validationCompleted: boolean
+			}>
+		>`
+			SELECT r.mode, r.status, r.from_time AS "fromTime",
+				r.to_time AS "toTime", r.jobs_state AS "jobsState",
+				EXISTS (
+					SELECT 1 FROM osem_migration.phase_progress p
+					WHERE p.run_id = r.id AND p.phase = 'validate'
+					  AND p.status = 'completed'
+				) AS "validationCompleted"
+			FROM osem_migration.run r WHERE r.id = ${config.parentRunId}
+		`
+		if (
+			!parent ||
+			parent.mode !== 'baseline' ||
+			parent.status !== 'completed'
+		) {
+			throw new Error(
+				`Catchup parent ${config.parentRunId} must be a completed baseline`,
+			)
+		}
+		if (!parent.validationCompleted) {
+			throw new Error(
+				`Catchup parent ${config.parentRunId} has no completed validation`,
+			)
+		}
+		const importFrom = config.measurementImportFrom ?? config.from
+		if (parent.toTime.getTime() !== importFrom.getTime()) {
+			throw new Error(
+				`Catchup import boundary ${importFrom.toISOString()} does not match baseline cutoff ${parent.toTime.toISOString()}`,
+			)
+		}
+		if (parent.fromTime > config.from || parent.toTime >= config.to) {
+			throw new Error(
+				'Catchup window must be covered by the baseline and end after its cutoff',
+			)
+		}
+		const unsafeAggregateBoundaries = unsafeCatchupAggregateBoundaries(
+			parent.fromTime,
+			config.from,
+		)
+		if (unsafeAggregateBoundaries.length > 0) {
+			throw new Error(
+				`Catchup from boundary ${config.from.toISOString()} cuts through previously complete aggregate buckets (${unsafeAggregateBoundaries.join(', ')}); use an aligned --from boundary or retain the baseline lower bound`,
+			)
+		}
+		if (config.manageJobs && parent.jobsState !== 'paused') {
+			throw new Error(
+				'Catchup requires the baseline background jobs to still be paused',
+			)
+		}
+		return parent
+	}
+
+	/**
+	 * Ensures the dark target contains only rows owned by the baseline/current
+	 * stages. A fresh catchup additionally requires every baseline metadata row.
+	 */
+	async assertCatchupTarget(
+		parentRunId: string,
+		currentRunId: string,
+		resume: boolean,
+	) {
+		await this.assertDarkTargetRuntimeState('Catchup target')
+		const orphanRows = await this.sql<
+			Array<{ id: string; name: string; email: string; role: string | null }>
+		>`
+			SELECT id, name, email, role FROM "user"
+			WHERE id = ${ORPHAN_USER_ID}
+			   OR name = 'Orphaned Devices'
+			   OR email = 'orphaned@opensensemap.org'
+		`
+		if (
+			orphanRows.some(
+				(row) =>
+					row.id !== ORPHAN_USER_ID ||
+					row.name !== 'Orphaned Devices' ||
+					row.email !== 'orphaned@opensensemap.org' ||
+					row.role !== 'user',
+			)
+		) {
+			throw new Error('Reserved orphan-user identity collides with target data')
+		}
+		const [orphanAuth] = await this.sql<[{ count: string }]>`
+			SELECT (
+				(SELECT count(*) FROM password WHERE user_id = ${ORPHAN_USER_ID}) +
+				(SELECT count(*) FROM profile WHERE user_id = ${ORPHAN_USER_ID})
+			)::text AS count
+		`
+		if (orphanAuth.count !== '0') {
+			throw new Error(
+				'Reserved orphan user must not have a password or profile',
+			)
+		}
+
+		const entities = ['user', 'device', 'sensor'] as const
+		for (const entity of entities) {
+			const [parentIds, currentIds] = await Promise.all([
+				this.entityIds(parentRunId, entity),
+				this.entityIds(currentRunId, entity),
+			])
+			const allowed = new Set(
+				resume ? [...parentIds, ...currentIds] : parentIds,
+			)
+			const rows =
+				entity === 'user'
+					? await this.sql<Array<{ id: string }>>`
+						SELECT id FROM "user" WHERE id <> ${ORPHAN_USER_ID} ORDER BY id
+					`
+					: entity === 'device'
+						? await this.sql<Array<{ id: string }>>`
+							SELECT id FROM device ORDER BY id
+						`
+						: await this.sql<Array<{ id: string }>>`
+							SELECT id FROM sensor ORDER BY id
+						`
+			const actual = new Set(rows.map((row) => row.id))
+			const unexpected = [...actual].filter((id) => !allowed.has(id))
+			const missing = resume ? [] : parentIds.filter((id) => !actual.has(id))
+			if (unexpected.length > 0 || missing.length > 0) {
+				throw new Error(
+					`Catchup target ${entity} ownership differs from the baseline: unexpected=${unexpected.length}, missing=${missing.length}`,
+				)
+			}
+		}
+
+		const parentSensorIds = await this.entityIds(parentRunId, 'sensor')
+		const allowedSensors = new Set(
+			resume
+				? [
+						...parentSensorIds,
+						...(await this.entityIds(currentRunId, 'sensor')),
+					]
+				: parentSensorIds,
+		)
+		const measurementSensors = await this.measurementSensorIds()
+		const unexpectedMeasurementSensors = measurementSensors.filter(
+			(sensorId) => !allowedSensors.has(sensorId),
+		)
+		if (unexpectedMeasurementSensors.length > 0) {
+			throw new Error(
+				`Catchup target has measurements outside baseline ownership: ${unexpectedMeasurementSensors.slice(0, 20).join(', ')}`,
+			)
+		}
+	}
+
+	/** Copies the baseline's original job snapshot to the final catchup stage. */
+	async inheritBackgroundJobs(parentRunId: string, runId: string) {
+		if (this.dryRun) return
+		const rows = await this.sql<Array<{ id: string }>>`
+			UPDATE osem_migration.run child
+			SET paused_jobs = parent.paused_jobs,
+				jobs_state = parent.jobs_state,
+				updated_at = now()
+			FROM osem_migration.run parent
+			WHERE child.id = ${runId} AND parent.id = ${parentRunId}
+			  AND child.jobs_state = 'none' AND parent.jobs_state = 'paused'
+			RETURNING child.id
+		`
+		const state = await this.jobRecord(runId)
+		if (
+			rows.length === 0 &&
+			(state.state === 'none' || state.jobs.length === 0)
+		) {
+			throw new Error('Could not inherit paused background jobs from baseline')
+		}
+	}
+
+	/**
+	 * Reconciles all source-derived application metadata to the final snapshot in
+	 * one transaction while deliberately leaving raw measurements untouched.
+	 */
+	async reconcileCatchupMetadata(
+		parentRunId: string,
+		runId: string,
+		users: MigratedUser[],
+		devices: Array<{ value: MigratedDevice; apiKey: string }>,
+		cutoff: Date,
+	) {
+		if (this.dryRun) return
+		try {
+			await this.sql.begin(async (tx) => {
+				await tx`
+				INSERT INTO "user" (
+					id, name, email, role, language, email_is_confirmed,
+					newsletter_opt_in, theme_preference, created_at, updated_at
+				) VALUES (
+					${ORPHAN_USER_ID}, 'Orphaned Devices', 'orphaned@opensensemap.org',
+					'user', 'en_US', true, false, 'system', now(), now()
+				) ON CONFLICT (id) DO NOTHING
+			`
+
+				// Free non-deferrable natural keys before applying the authoritative set.
+				await tx`
+				UPDATE "user" u
+				SET name = '__osem_catchup_' || md5(${runId} || ':' || u.id),
+					email = md5(${runId} || ':' || u.id) || '@catchup.invalid',
+					unconfirmed_email = NULL
+				WHERE u.id <> ${ORPHAN_USER_ID} AND EXISTS (
+					SELECT 1 FROM osem_migration.entity e
+					WHERE e.run_id IN (${parentRunId}, ${runId})
+					  AND e.entity = 'user' AND e.source_id = u.id
+				)
+			`
+
+				for (const user of users) {
+					await tx`
+					INSERT INTO "user" (
+						id, name, email, unconfirmed_email, theme_preference,
+						role, language, email_is_confirmed, newsletter_opt_in,
+						created_at, updated_at, accepted_tos_version_id, accepted_tos_at
+					) VALUES (
+						${user.id}, ${user.name}, ${user.email}, NULL, 'system',
+						${user.role}, ${user.language}, ${user.emailIsConfirmed}, false,
+						${user.createdAt}, ${user.updatedAt}, NULL, NULL
+					)
+					ON CONFLICT (id) DO UPDATE SET
+						name = excluded.name, email = excluded.email,
+						unconfirmed_email = NULL, theme_preference = 'system',
+						role = excluded.role, language = excluded.language,
+						email_is_confirmed = excluded.email_is_confirmed,
+						newsletter_opt_in = false, created_at = excluded.created_at,
+						updated_at = excluded.updated_at,
+						accepted_tos_version_id = NULL, accepted_tos_at = NULL
+				`
+					await tx`
+					INSERT INTO password (user_id, hash)
+					VALUES (${user.id}, ${user.passwordHash})
+					ON CONFLICT (user_id) DO UPDATE SET hash = excluded.hash
+				`
+					await tx`
+					INSERT INTO profile (
+						id, display_name, public, home_latitude, home_longitude,
+						home_zoom, user_id
+					) VALUES (
+						${user.profileId}, ${user.displayName}, false, NULL, NULL, 10,
+						${user.id}
+					)
+					ON CONFLICT (user_id) DO UPDATE SET
+						id = excluded.id, display_name = excluded.display_name,
+						public = false, home_latitude = NULL, home_longitude = NULL,
+						home_zoom = 10
+				`
+				}
+
+				await tx`
+				DELETE FROM device_to_location dl WHERE EXISTS (
+					SELECT 1 FROM osem_migration.entity e
+					WHERE e.run_id IN (${parentRunId}, ${runId})
+					  AND e.entity = 'device' AND e.source_id = dl.device_id
+				)
+			`
+
+				for (const { value: device, apiKey } of devices) {
+					await tx`
+					INSERT INTO device (
+						id, name, image, website, description, tags, link, use_auth,
+						"apiKey", exposure, status, model, public, created_at,
+						updated_at, archived_at, orphaned_at, expires_at, latitude,
+						longitude, height_above_ground, terrain_elevation,
+						terrain_elevation_dataset, sensor_wiki_model,
+						device_schema_version_id, user_id
+					) VALUES (
+						${device.id}, ${device.name}, NULL, NULL, ${device.description},
+						${device.tags}, ${device.link}, ${device.useAuth}, ${apiKey},
+						${device.exposure}, 'old', ${device.model}, ${device.public},
+						${device.createdAt}, ${device.updatedAt}, NULL,
+						${device.userId === ORPHAN_USER_ID ? cutoff : null}, NULL,
+						${device.latitude}, ${device.longitude}, ${device.heightAboveGround},
+						NULL, NULL, NULL, NULL, ${device.userId}
+					)
+					ON CONFLICT (id) DO UPDATE SET
+						name = excluded.name, image = NULL, website = NULL,
+						description = excluded.description, tags = excluded.tags,
+						link = excluded.link, use_auth = excluded.use_auth,
+						"apiKey" = excluded."apiKey", exposure = excluded.exposure,
+						status = 'old', model = excluded.model, public = excluded.public,
+						created_at = excluded.created_at, updated_at = excluded.updated_at,
+						archived_at = NULL, orphaned_at = excluded.orphaned_at,
+						expires_at = NULL, latitude = excluded.latitude,
+						longitude = excluded.longitude,
+						height_above_ground = excluded.height_above_ground,
+						terrain_elevation = NULL, terrain_elevation_dataset = NULL,
+						sensor_wiki_model = NULL, device_schema_version_id = NULL,
+						user_id = excluded.user_id
+				`
+
+					for (const sensor of device.sensors) {
+						await tx`
+						INSERT INTO sensor (
+							id, title, unit, sensor_type, icon, status, created_at,
+							updated_at, device_id, "lastMeasurement", "order",
+							sensor_wiki_type, sensor_wiki_phenomenon, sensor_wiki_unit, data
+						) VALUES (
+							${sensor.id}, ${sensor.title}, ${sensor.unit},
+							${sensor.sensorType}, ${sensor.icon}, 'old',
+							${device.createdAt}, ${device.updatedAt}, ${device.id}, NULL,
+							${sensor.order}, NULL, NULL, NULL, NULL
+						)
+						ON CONFLICT (id) DO UPDATE SET
+							title = excluded.title, unit = excluded.unit,
+							sensor_type = excluded.sensor_type, icon = excluded.icon,
+							status = 'old', created_at = excluded.created_at,
+							updated_at = excluded.updated_at,
+							device_id = excluded.device_id, "lastMeasurement" = NULL,
+							"order" = excluded."order", sensor_wiki_type = NULL,
+							sensor_wiki_phenomenon = NULL, sensor_wiki_unit = NULL,
+							data = NULL
+					`
+					}
+
+					const locationIds = await this.resolveLocationIds(
+						tx,
+						device.locations,
+					)
+					const rows = device.locations.map((location) => ({
+						device_id: device.id,
+						location_id: locationIds.get(
+							this.locationKey(location.longitude, location.latitude),
+						)!,
+						time: location.time,
+					}))
+					for (let offset = 0; offset < rows.length; offset += 10_000) {
+						const batch = rows.slice(offset, offset + 10_000)
+						await tx`
+						INSERT INTO device_to_location ${tx(
+							batch,
+							'device_id',
+							'location_id',
+							'time',
+						)}
+					`
+					}
+				}
+
+				await tx`
+				DELETE FROM sensor s
+				WHERE EXISTS (
+					SELECT 1 FROM osem_migration.entity old
+					WHERE old.run_id = ${parentRunId} AND old.entity = 'sensor'
+					  AND old.source_id = s.id
+				) AND NOT EXISTS (
+					SELECT 1 FROM osem_migration.entity current
+					WHERE current.run_id = ${runId} AND current.entity = 'sensor'
+					  AND current.source_id = s.id
+				)
+			`
+				await tx`
+				DELETE FROM device d
+				WHERE EXISTS (
+					SELECT 1 FROM osem_migration.entity old
+					WHERE old.run_id = ${parentRunId} AND old.entity = 'device'
+					  AND old.source_id = d.id
+				) AND NOT EXISTS (
+					SELECT 1 FROM osem_migration.entity current
+					WHERE current.run_id = ${runId} AND current.entity = 'device'
+					  AND current.source_id = d.id
+				)
+			`
+				await tx`
+				DELETE FROM "user" u
+				WHERE u.id <> ${ORPHAN_USER_ID} AND EXISTS (
+					SELECT 1 FROM osem_migration.entity old
+					WHERE old.run_id = ${parentRunId} AND old.entity = 'user'
+					  AND old.source_id = u.id
+				) AND NOT EXISTS (
+					SELECT 1 FROM osem_migration.entity current
+					WHERE current.run_id = ${runId} AND current.entity = 'user'
+					  AND current.source_id = u.id
+				)
+			`
+			})
+		} catch (error) {
+			// IDs cached from an aborted transaction may refer to rolled-back rows.
+			this.locationIds.clear()
+			throw error
 		}
 	}
 
@@ -924,10 +1490,12 @@ export class AppTarget {
 						${client.array(latitudes, 701)}
 					)
 				)
-				INSERT INTO location (location)
-				SELECT DISTINCT ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)
+				INSERT INTO location (location, height_above_ground)
+				SELECT DISTINCT
+					ST_SetSRID(ST_MakePoint(longitude, latitude), 4326),
+					NULL::double precision
 				FROM input
-				ON CONFLICT (location) DO NOTHING
+				ON CONFLICT (location, height_above_ground) DO NOTHING
 			`
 			const rows = await client<
 				Array<{ id: string; longitude: number; latitude: number }>
@@ -944,7 +1512,7 @@ export class AppTarget {
 				JOIN location l
 				  ON l.location = ST_SetSRID(
 					ST_MakePoint(input.longitude, input.latitude), 4326
-				  )
+				  ) AND l.height_above_ground IS NULL
 			`
 			for (const row of rows) {
 				this.locationIds.set(
@@ -1399,13 +1967,17 @@ export class AppTarget {
 			Array<{
 				partitionKey: string
 				expectedCount: string
+				sourceSha256: string | null
 				targetCount: string | null
+				targetSha256: string | null
 				details: Record<string, unknown>
 			}>
 		>`
 			SELECT partition_key AS "partitionKey",
 				expected_count::text AS "expectedCount",
-				target_count::text AS "targetCount", details
+				source_sha256 AS "sourceSha256",
+				target_count::text AS "targetCount",
+				target_sha256 AS "targetSha256", details
 			FROM osem_migration.manifest
 			WHERE run_id = ${runId} AND entity = ${entity}
 			ORDER BY partition_key
@@ -1413,9 +1985,20 @@ export class AppTarget {
 		return rows.map((row) => ({
 			partitionKey: row.partitionKey,
 			expectedCount: Number(row.expectedCount),
+			sourceSha256: row.sourceSha256,
 			targetCount: row.targetCount === null ? null : Number(row.targetCount),
+			targetSha256: row.targetSha256,
 			details: row.details,
 		}))
+	}
+
+	/** Clears an incomplete validation pass before rebuilding its complete seal. */
+	async clearManifests(runId: string, entity: string) {
+		if (this.dryRun) return
+		await this.sql`
+			DELETE FROM osem_migration.manifest
+			WHERE run_id = ${runId} AND entity = ${entity}
+		`
 	}
 
 	/** Streams one sensor's target rows in digest order without loading them all in memory. */
@@ -1439,6 +2022,75 @@ export class AppTarget {
 		for await (const rows of query.cursor(1_000)) {
 			for (const row of rows) yield row
 		}
+	}
+
+	/** Returns sorted sensor IDs represented by raw target measurements. */
+	async measurementSensorIds(from?: Date, to?: Date) {
+		const rows =
+			from && to
+				? await this.sql<Array<{ sensorId: string }>>`
+					SELECT DISTINCT sensor_id AS "sensorId" FROM measurement
+					WHERE time >= ${from} AND time < ${to}
+					ORDER BY sensor_id
+				`
+				: await this.sql<Array<{ sensorId: string }>>`
+					SELECT DISTINCT sensor_id AS "sensorId" FROM measurement
+					ORDER BY sensor_id
+				`
+		return rows.map((row) => row.sensorId)
+	}
+
+	/** Counts rows outside a stage's declared window for target-seal checks. */
+	async measurementsOutsideOwnedWindow(runId: string, from: Date, to: Date) {
+		const [row] = await this.sql<Array<{ count: string }>>`
+			SELECT count(*)::text AS count FROM measurement m
+			JOIN osem_migration.entity e
+			  ON e.run_id = ${runId} AND e.entity = 'sensor'
+			 AND e.source_id = m.sensor_id
+			WHERE m.time < ${from} OR m.time >= ${to}
+		`
+		return Number(row.count)
+	}
+
+	/** Deletes one half-open sensor/time partition before authoritative replacement. */
+	async deleteMeasurementPartition(sensorId: string, from: Date, to: Date) {
+		if (this.dryRun) return 0
+		const [row] = await this.sql<Array<{ count: string }>>`
+			WITH deleted AS (
+				DELETE FROM measurement
+				WHERE sensor_id = ${sensorId} AND time >= ${from} AND time < ${to}
+				RETURNING 1
+			)
+			SELECT count(*)::text AS count FROM deleted
+		`
+		return Number(row.count)
+	}
+
+	/**
+	 * Removes baseline-owned raw rows that aged out of the final retention window.
+	 * Rows inside the window are handled only by per-month reconciliation.
+	 */
+	async pruneCatchupMeasurements(
+		parentRunId: string,
+		runId: string,
+		from: Date,
+		to: Date,
+	) {
+		if (this.dryRun) return 0
+		const [row] = await this.sql<Array<{ count: string }>>`
+			WITH deleted AS (
+				DELETE FROM measurement m
+				USING (
+					SELECT DISTINCT source_id FROM osem_migration.entity
+					WHERE run_id IN (${parentRunId}, ${runId}) AND entity = 'sensor'
+				) owned
+				WHERE m.sensor_id = owned.source_id
+				  AND (m.time < ${from} OR m.time >= ${to})
+				RETURNING 1
+			)
+			SELECT count(*)::text AS count FROM deleted
+		`
+		return Number(row.count)
 	}
 
 	/**
@@ -1873,6 +2525,7 @@ export class AppTarget {
 				expectedCount: number
 				count: number
 				mismatchCount: number
+				unexpectedCount: number
 				min: Date | null
 				max: Date | null
 			}
@@ -1884,6 +2537,7 @@ export class AppTarget {
 					expectedCount: 0,
 					count: 0,
 					mismatchCount: 0,
+					unexpectedCount: 0,
 					min: null,
 					max: null,
 				}
@@ -1894,6 +2548,7 @@ export class AppTarget {
 					expectedCount: string
 					count: string
 					mismatchCount: string
+					unexpectedCount: string
 					min: Date | null
 					max: Date | null
 				}>
@@ -1922,6 +2577,16 @@ export class AppTarget {
 					 AND e.source_id = target.sensor_id
 					WHERE target.time >= $2::timestamptz
 					  AND target.time < $3::timestamptz
+				), unexpected AS (
+					SELECT count(*) AS unexpected_count
+					FROM ${level.view} target
+					WHERE target.time >= $2::timestamptz
+					  AND target.time < $3::timestamptz
+					  AND NOT EXISTS (
+						SELECT 1 FROM osem_migration.entity e
+						WHERE e.run_id = $1 AND e.entity = 'sensor'
+						  AND e.source_id = target.sensor_id
+					  )
 				), compared AS (
 					SELECT expected.sensor_id AS expected_sensor,
 						actual.sensor_id AS actual_sensor,
@@ -1956,6 +2621,8 @@ export class AppTarget {
 				SELECT expected_count::text AS "expectedCount",
 					actual_count::text AS count,
 					mismatch_count::text AS "mismatchCount",
+					(SELECT unexpected_count::text FROM unexpected)
+						AS "unexpectedCount",
 					min_time AS min, max_time AS max
 				FROM summary`,
 				[runId, bounds.start.toISOString(), bounds.end.toISOString()],
@@ -1963,7 +2630,8 @@ export class AppTarget {
 			statistics[level.view] = {
 				expectedCount: Number(row.expectedCount),
 				count: Number(row.count),
-				mismatchCount: Number(row.mismatchCount),
+				mismatchCount: Number(row.mismatchCount) + Number(row.unexpectedCount),
+				unexpectedCount: Number(row.unexpectedCount),
 				min: row.min,
 				max: row.max,
 			}
@@ -2180,6 +2848,7 @@ export class AppTarget {
 		cutoff: Date,
 		archiveBefore: Date,
 	) {
+		await this.assertDarkTargetRuntimeState('Migration validation target')
 		const [invariants] = await this.sql<
 			Array<{
 				measurementWithoutSensor: string
@@ -2196,6 +2865,7 @@ export class AppTarget {
 				acceptedTosPresent: string
 				acceptedTosStatePresent: string
 				entityCountMismatch: string
+				unexpectedEntityRows: string
 			}>
 		>`
 			WITH
@@ -2312,6 +2982,30 @@ export class AppTarget {
 						SELECT 1 FROM sensor s WHERE e.entity = 'sensor' AND s.id = e.source_id
 					  )
 				) missing
+			), unexpected_entity_rows AS (
+				SELECT (
+					(SELECT count(*) FROM "user" u
+					WHERE u.id <> ${ORPHAN_USER_ID} AND NOT EXISTS (
+						SELECT 1 FROM osem_migration.entity e
+						WHERE e.run_id = ${runId} AND e.entity = 'user'
+						  AND e.source_id = u.id
+					)) +
+					(SELECT count(*) FROM device d WHERE NOT EXISTS (
+						SELECT 1 FROM osem_migration.entity e
+						WHERE e.run_id = ${runId} AND e.entity = 'device'
+						  AND e.source_id = d.id
+					)) +
+					(SELECT count(*) FROM sensor s WHERE NOT EXISTS (
+						SELECT 1 FROM osem_migration.entity e
+						WHERE e.run_id = ${runId} AND e.entity = 'sensor'
+						  AND e.source_id = s.id
+					)) +
+					(SELECT count(*) FROM measurement m WHERE NOT EXISTS (
+						SELECT 1 FROM osem_migration.entity e
+						WHERE e.run_id = ${runId} AND e.entity = 'sensor'
+						  AND e.source_id = m.sensor_id
+					))
+				) AS value
 			)
 			SELECT
 				(SELECT value FROM measurement_without_sensor) AS "measurementWithoutSensor",
@@ -2327,7 +3021,8 @@ export class AppTarget {
 				(SELECT value FROM missing_user_relations) AS "missingUserRelations",
 				(SELECT value FROM accepted_tos_present) AS "acceptedTosPresent",
 				(SELECT value FROM accepted_tos_state_present) AS "acceptedTosStatePresent",
-				(SELECT value FROM entity_count_mismatch) AS "entityCountMismatch"
+				(SELECT value FROM entity_count_mismatch) AS "entityCountMismatch",
+				(SELECT value FROM unexpected_entity_rows) AS "unexpectedEntityRows"
 		`
 		const counts = await this.sql<Array<{ entity: string; count: string }>>`
 			SELECT 'users' AS entity, count(*)::text AS count

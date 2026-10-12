@@ -1,8 +1,11 @@
-import { PHASES, type Phase } from './types'
+import { PHASES, type MigrationMode, type Phase } from './types'
 
 export type CliOptions = {
+	mode?: MigrationMode
+	parentRunId?: string
 	phases?: Phase[]
 	from?: string
+	importFrom?: string
 	historyMonths?: number
 	to?: string
 	runId?: string
@@ -47,6 +50,19 @@ export function parseArgs(argv: string[]): CliOptions {
 	for (let index = 0; index < argv.length; index++) {
 		const argument = argv[index]
 		switch (argument) {
+			case '--mode': {
+				const value = readValue(argv, index, argument)
+				if (!['single', 'baseline', 'catchup'].includes(value)) {
+					throw new Error('--mode must be single, baseline, or catchup')
+				}
+				options.mode = value as MigrationMode
+				index++
+				break
+			}
+			case '--parent-run-id':
+				options.parentRunId = readValue(argv, index, argument)
+				index++
+				break
 			case '--phase':
 			case '--phases':
 				options.phases = parsePhases(readValue(argv, index, argument))
@@ -54,6 +70,10 @@ export function parseArgs(argv: string[]): CliOptions {
 				break
 			case '--from':
 				options.from = readValue(argv, index, argument)
+				index++
+				break
+			case '--import-from':
+				options.importFrom = readValue(argv, index, argument)
 				index++
 				break
 			case '--history-months': {
@@ -122,6 +142,10 @@ Usage:
   npm run migrate:data -- --history-months <n> --to <ISO> [options]
 
 Options:
+  --mode <single|baseline|catchup>
+                             Run once, preload a baseline, or reconcile a later backup
+  --parent-run-id <id>       Completed baseline run required by catchup mode
+  --import-from <ISO>        Catchup boundary (normally the baseline --to)
   --phase <name[,name]>       Select dry-run phases; writes always run all
   --history-months <number>   Derive --from; minimum 12 months
   --run-id <id>               Unique identifier used for audit records
@@ -135,8 +159,10 @@ Options:
 
 Phases: ${PHASES.join(', ')}
 
-New data-writing runs require empty targets. Resumes require --resume and an
-explicit --run-id whose recorded source/configuration identity still matches.
+Single and baseline runs require empty targets. Catchup runs require a completed
+baseline identified by --parent-run-id and reconcile the target to the later
+backup. Resumes require --resume and an explicit --run-id whose recorded
+source/configuration identity still matches.
 All writes require MIGRATION_SOURCE_KIND=restored-backup, MIGRATION_BACKUP_ID,
 and every phase in canonical order.
 production-readonly is limited to a dry-run preflight.

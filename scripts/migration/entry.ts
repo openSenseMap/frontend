@@ -25,7 +25,13 @@ async function main() {
 	const onSigterm = () => abort('SIGTERM')
 	process.once('SIGINT', onSigint)
 	process.once('SIGTERM', onSigterm)
-	const report = new MigrationReport(config.runId, config.dryRun, config.resume)
+	const report = new MigrationReport(
+		config.runId,
+		config.dryRun,
+		config.resume,
+		config.mode ?? 'single',
+		config.parentRunId,
+	)
 	const source = new MongoSource(
 		config.mongoUrl,
 		config.mongoDbName,
@@ -88,9 +94,18 @@ async function main() {
 			error instanceof Error ? error.message : 'Migration failed',
 		)
 		if (runStarted) {
-			const jobState = await app
+			let jobState = await app
 				.backgroundJobState(config.runId)
 				.catch(() => ({ jobs: [], state: 'none' as const }))
+			if (
+				jobState.state === 'none' &&
+				(config.mode ?? 'single') === 'catchup' &&
+				config.parentRunId
+			) {
+				jobState = await app
+					.backgroundJobState(config.parentRunId)
+					.catch(() => ({ jobs: [], state: 'none' as const }))
+			}
 			if (
 				jobState.jobs.length > 0 &&
 				(jobState.state === 'recorded' || jobState.state === 'paused')

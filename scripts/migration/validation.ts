@@ -1,16 +1,21 @@
-import { createHash } from 'node:crypto'
 import { ORPHAN_USER_ID } from './app-target'
 import { canonicalValue } from './canonical'
 import { type MigrationDependencies } from './context'
 import { preservedApiKeyMismatches } from './device-credentials'
 import {
 	transformDevice,
-	transformMeasurement,
 	transformMqttIntegration,
 	transformTtnIntegration,
 	transformUser,
 } from './domain/transforms'
 import { checkpoint, newPhaseResult, throwIfAborted } from './phases'
+import {
+	emptyMeasurementDigest,
+	measurementDigestsEqual,
+	measurementPartitionKey,
+	sourceMeasurementDigestsByUtcMonth,
+	targetMeasurementDigestsByUtcMonth,
+} from './measurement-partitions'
 import { CAGGS, expectedEntityIds, validSensorIds } from './preflight'
 import {
 	type MigrationConfig,
@@ -19,196 +24,94 @@ import {
 	type SourceSnapshot,
 } from './types'
 
-type MeasurementDigest = {
-	count: number
-	sha256: string
-	rejected?: number
-	duplicates?: number
-}
-
-/** Adds one canonical measurement tuple to an order-sensitive validation digest. */
-function updateMeasurementDigest(
-	hash: ReturnType<typeof createHash>,
-	row: {
-		sensorId: string
-		time: Date
-		value: number
-		location: { longitude: number; latitude: number } | null
-	},
-) {
-	const normalize = (value: number) => (Object.is(value, -0) ? 0 : value)
-	hash.update(
-		`${JSON.stringify([
-			row.sensorId,
-			row.time.getTime(),
-			normalize(row.value),
-			row.location
-				? [normalize(row.location.longitude), normalize(row.location.latitude)]
-				: null,
-		])}\n`,
-	)
-}
-
 /**
- * Replays the source transformation rules for one sensor to calculate the expected
- * count and digest, including rejected and duplicate-row accounting.
- */
-async function sourceMeasurementDigest(
-	config: MigrationConfig,
-	dependencies: MigrationDependencies,
-	sensorId: string,
-): Promise<MeasurementDigest> {
-	const hash = createHash('sha256')
-	let count = 0
-	let rejected = 0
-	let duplicates = 0
-	for await (const group of dependencies.source.measurementGroupsForSensor(
-		sensorId,
-		config.from,
-		config.to,
-	)) {
-		let accepted = false
-		for (const sourceMeasurement of group) {
-			const transformed = transformMeasurement(
-				sourceMeasurement,
-				sensorId,
-				config.from,
-				config.to,
-			)
-			if (!transformed.ok) {
-				rejected++
-				continue
-			}
-			if (accepted) {
-				duplicates++
-				continue
-			}
-			accepted = true
-			updateMeasurementDigest(hash, transformed.value)
-			count++
-		}
-	}
-	return { count, sha256: hash.digest('hex'), rejected, duplicates }
-}
-
-/** Calculates the corresponding ordered count and digest from migrated PostgreSQL rows. */
-async function targetMeasurementDigest(
-	config: MigrationConfig,
-	dependencies: MigrationDependencies,
-	sensorId: string,
-): Promise<MeasurementDigest> {
-	const hash = createHash('sha256')
-	let count = 0
-	for await (const row of dependencies.app.measurementsForSensor(
-		sensorId,
-		config.from,
-		config.to,
-	)) {
-		updateMeasurementDigest(hash, {
-			sensorId: row.sensorId,
-			time: row.time,
-			value: row.value,
-			location:
-				row.longitude === null || row.latitude === null
-					? null
-					: { longitude: row.longitude, latitude: row.latitude },
-		})
-		count++
-	}
-	return { count, sha256: hash.digest('hex') }
-}
-
-/**
- * Compares source and target measurements sensor by sensor and stores durable
- * manifests, allowing this expensive validation pass itself to resume safely.
+ * Compares source and target measurements by sensor and UTC month. This is also
+ * the durable baseline seal consumed by a later catchup and independently proves
+ * the final catchup result over the complete retained window.
  */
 async function validateMeasurementManifests(
 	config: MigrationConfig,
 	dependencies: MigrationDependencies,
 	snapshot: SourceSnapshot,
-	progress: PhaseProgress | null | undefined,
+	_progress: PhaseProgress | null | undefined,
 	phaseResult: PhaseResult,
 ) {
 	const sensorIds = [...validSensorIds(snapshot)].sort()
-	const cursorStage =
-		typeof progress?.cursor?.stage === 'string' ? progress.cursor.stage : null
-	const cursorKey =
-		typeof progress?.cursor?.key === 'string' ? progress.cursor.key : null
-	const completedManifests = cursorStage === 'measurement-manifests-complete'
-	const lastCompletedKey = completedManifests ? sensorIds.at(-1) : cursorKey
-	const priorRows = lastCompletedKey
-		? (await dependencies.app.manifestRows(config.runId, 'measurement')).filter(
-				(row) => row.partitionKey <= lastCompletedKey,
-			)
-		: []
-	const expectedPriorCount = lastCompletedKey
-		? sensorIds.filter((sensorId) => sensorId <= lastCompletedKey).length
-		: 0
-	if (priorRows.length !== expectedPriorCount) {
-		throw new Error(
-			'Measurement validation checkpoint does not match its durable manifests',
-		)
-	}
-	let expected = priorRows.reduce((total, row) => total + row.expectedCount, 0)
-	let actual = priorRows.reduce(
-		(total, row) => total + (row.targetCount ?? 0),
-		0,
-	)
+	await dependencies.app.clearManifests?.(config.runId, 'measurement')
+	let expected = 0
+	let actual = 0
 	const mismatches: string[] = []
-	let mismatchCount = priorRows.filter(
-		(row) => row.details.matches !== true,
-	).length
-	for (const row of priorRows) {
-		if (row.details.matches !== true && mismatches.length < 100) {
-			mismatches.push(row.partitionKey)
-		}
-	}
-	for (const [index, sensorId] of sensorIds.entries()) {
-		if (lastCompletedKey && sensorId <= lastCompletedKey) continue
+	let mismatchCount = 0
+	let partitionCount = 0
+	for (const sensorId of sensorIds) {
 		throwIfAborted(dependencies)
-		const source = await sourceMeasurementDigest(config, dependencies, sensorId)
-		const target = await targetMeasurementDigest(config, dependencies, sensorId)
-		expected += source.count
-		actual += target.count
-		const matches =
-			source.count === target.count && source.sha256 === target.sha256
-		if (!matches) {
-			mismatchCount++
-			if (mismatches.length < 100) mismatches.push(sensorId)
-		}
-		await dependencies.app.saveManifest({
-			runId: config.runId,
-			entity: 'measurement',
-			partitionKey: sensorId,
-			expectedCount: source.count,
-			sourceSha256: source.sha256,
-			targetCount: target.count,
-			targetSha256: target.sha256,
-			details: {
-				rejected: source.rejected ?? 0,
-				duplicates: source.duplicates ?? 0,
-				matches,
-			},
-		})
-		await checkpoint(config, dependencies, phaseResult, {
-			stage: 'measurement-manifests',
-			key: sensorId,
-		})
-		if ((index + 1) % 100 === 0) {
-			dependencies.logger.info('Validated measurement partitions', {
-				completed: index + 1,
-				total: sensorIds.length,
+		const [sourceDigests, targetDigests] = await Promise.all([
+			sourceMeasurementDigestsByUtcMonth(dependencies.source, sensorId, {
+				from: config.from,
+				to: config.to,
+			}),
+			targetMeasurementDigestsByUtcMonth(dependencies.app, sensorId, {
+				from: config.from,
+				to: config.to,
+			}),
+		])
+		const monthKeys = [
+			...new Set([...sourceDigests.keys(), ...targetDigests.keys()]),
+		].sort()
+		for (const monthKey of monthKeys) {
+			const partitionKey = measurementPartitionKey(sensorId, monthKey)
+			const source = sourceDigests.get(monthKey) ?? emptyMeasurementDigest()
+			const target = targetDigests.get(monthKey) ?? emptyMeasurementDigest()
+			expected += source.count
+			actual += target.count
+			partitionCount++
+			const matches = measurementDigestsEqual(source, target)
+			if (!matches) {
+				mismatchCount++
+				if (mismatches.length < 100) mismatches.push(partitionKey)
+			}
+			await dependencies.app.saveManifest({
+				runId: config.runId,
+				entity: 'measurement',
+				partitionKey,
+				expectedCount: source.count,
+				sourceSha256: source.sha256,
+				targetCount: target.count,
+				targetSha256: target.sha256,
+				details: {
+					sensorId,
+					month: monthKey,
+					rejected: source.rejected ?? 0,
+					duplicates: source.duplicates ?? 0,
+					matches,
+				},
 			})
+			await checkpoint(config, dependencies, phaseResult, {
+				stage: 'measurement-manifests',
+				key: partitionKey,
+			})
+			if (partitionCount % 1_000 === 0) {
+				dependencies.logger.info('Validated measurement partitions', {
+					completed: partitionCount,
+					sensors: sensorIds.length,
+				})
+			}
 		}
 	}
 	await checkpoint(config, dependencies, phaseResult, {
 		stage: 'measurement-manifests-complete',
+		partitions: partitionCount,
 	})
 	return {
 		expected,
 		actual,
+		partitionCount,
 		mismatchCount,
-		mismatchSensorIds: mismatches,
+		mismatchPartitionKeys: mismatches,
+		// Kept for report consumers written against the original sensor manifest.
+		mismatchSensorIds: [
+			...new Set(mismatches.map((key) => key.slice(0, key.lastIndexOf('/')))),
+		],
 	}
 }
 
@@ -546,10 +449,14 @@ export async function validatePhase(
 			targetSensorDevices.get(sensorId) !==
 			snapshot.sensorToDeviceId.get(sensorId),
 	)
+	const aggregateFrom =
+		(config.mode ?? 'single') === 'catchup' && config.parentRunId
+			? (await dependencies.app.migrationRunWindow(config.parentRunId)).from
+			: config.from
 	const aggregateValidation =
 		await dependencies.app.continuousAggregateValidation(
 			config.runId,
-			config.from,
+			aggregateFrom,
 			config.to,
 		)
 	const issues = [
@@ -696,8 +603,15 @@ export async function validatePhase(
 	}
 	result.sourceSeen = Object.keys(validation.invariants).length
 	result.written = result.sourceSeen
-	if (config.manageJobs) {
+	if (config.manageJobs && (config.mode ?? 'single') !== 'baseline') {
 		await dependencies.app.restoreBackgroundJobs(config.runId)
+	} else if (config.manageJobs && (config.mode ?? 'single') === 'baseline') {
+		dependencies.report.warn({
+			severity: 'high',
+			code: 'baseline_background_jobs_remain_paused',
+			message:
+				'Baseline validation succeeded; background jobs intentionally remain paused until the linked catchup completes',
+		})
 	}
 	return result
 }

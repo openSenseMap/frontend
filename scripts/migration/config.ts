@@ -12,12 +12,15 @@ const environmentSchema = z.object({
 		.enum(['restored-backup', 'production-readonly'])
 		.optional(),
 	MIGRATION_BACKUP_ID: z.string().min(1).optional(),
+	MIGRATION_MODE: z.enum(['single', 'baseline', 'catchup']).default('single'),
+	MIGRATION_PARENT_RUN_ID: z.string().min(1).optional(),
 	APP_DATABASE_URL: optionalUrl,
 	DATABASE_URL: optionalUrl,
 	MQTT_DATABASE_URL: optionalUrl,
 	TTN_DATABASE_URL: optionalUrl,
 	PG_CLIENT_SSL: z.enum(['true', 'false']).default('false'),
 	MIGRATION_FROM: z.string().optional(),
+	MIGRATION_IMPORT_FROM: z.string().optional(),
 	MIGRATION_HISTORY_MONTHS: z.coerce.number().int().positive().optional(),
 	MIGRATION_TO: z.string().optional(),
 	MIGRATION_RUN_ID: z.string().optional(),
@@ -78,6 +81,8 @@ export function parseConfig(
 	cli: CliOptions,
 ): MigrationConfig {
 	const parsed = environmentSchema.parse(environment)
+	const mode = cli.mode ?? parsed.MIGRATION_MODE
+	const parentRunId = cli.parentRunId ?? parsed.MIGRATION_PARENT_RUN_ID
 	if (cli.resume && cli.dryRun) {
 		throw new Error('--resume cannot be combined with --dry-run')
 	}
@@ -140,6 +145,36 @@ export function parseConfig(
 		}
 	}
 	if (from >= to) throw new Error('Migration window must satisfy from < to')
+	const importFromValue = cli.importFrom ?? parsed.MIGRATION_IMPORT_FROM
+	let measurementImportFrom = from
+	if (mode === 'catchup') {
+		if (!parentRunId) {
+			throw new Error(
+				'Catchup mode requires MIGRATION_PARENT_RUN_ID/--parent-run-id',
+			)
+		}
+		if (!importFromValue) {
+			throw new Error(
+				'Catchup mode requires MIGRATION_IMPORT_FROM/--import-from',
+			)
+		}
+		measurementImportFrom = parseDate(
+			importFromValue,
+			'MIGRATION_IMPORT_FROM/--import-from',
+		)
+		if (measurementImportFrom < from || measurementImportFrom >= to) {
+			throw new Error(
+				'Catchup import boundary must satisfy from <= import-from < to',
+			)
+		}
+	} else {
+		if (parentRunId) {
+			throw new Error('--parent-run-id is only valid in catchup mode')
+		}
+		if (importFromValue) {
+			throw new Error('--import-from is only valid in catchup mode')
+		}
+	}
 	const archiveBefore = subtractUtcMonths(to, 12)
 	if (from > archiveBefore) {
 		throw new Error(
@@ -195,6 +230,16 @@ export function parseConfig(
 			'Migration run ID may only contain letters, digits, ., _, and -',
 		)
 	}
+	if (parentRunId && !/^[0-9A-Za-z._-]+$/.test(parentRunId)) {
+		throw new Error(
+			'Parent migration run ID may only contain letters, digits, ., _, and -',
+		)
+	}
+	if (parentRunId === runId) {
+		throw new Error(
+			'Catchup run ID must differ from its parent baseline run ID',
+		)
+	}
 	const refreshAggregates =
 		cli.refreshAggregates ?? parsed.MIGRATION_REFRESH_AGGREGATES === 'true'
 	const batchSize = cli.batchSize ?? parsed.MIGRATION_BATCH_SIZE
@@ -204,12 +249,15 @@ export function parseConfig(
 
 	return {
 		runId,
+		mode,
+		parentRunId,
 		phases,
 		dryRun: cli.dryRun,
 		resume: cli.resume,
 		sourceKind: parsed.MIGRATION_SOURCE_KIND,
 		backupId: parsed.MIGRATION_BACKUP_ID,
 		from,
+		measurementImportFrom,
 		to,
 		archiveBefore,
 		batchSize,
@@ -238,7 +286,12 @@ export function redactedConfigHash(config: MigrationConfig) {
 		return `${url.protocol}//${url.host}${url.pathname}`
 	}
 	const structural = {
+		mode: config.mode ?? 'single',
+		parentRunId: config.parentRunId ?? null,
 		from: config.from.toISOString(),
+		measurementImportFrom: (
+			config.measurementImportFrom ?? config.from
+		).toISOString(),
 		to: config.to.toISOString(),
 		archiveBefore: config.archiveBefore.toISOString(),
 		manageJobs: config.manageJobs,

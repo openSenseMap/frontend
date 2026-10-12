@@ -11,7 +11,19 @@ import {
 } from './domain/transforms'
 import { CAGGS, validSensorIds } from './preflight'
 import {
+	canonicalSourceMeasurementEvents,
+	clippedUtcMonthBounds,
+	type CanonicalSourceMeasurementEvent,
+	emptyMeasurementDigest,
+	measurementDigestsEqual,
+	measurementPartitionKey,
+	sourceMeasurementDigestsByUtcMonth,
+	targetMeasurementDigest,
+	targetMeasurementDigestsByUtcMonth,
+} from './measurement-partitions'
+import {
 	type MigrationConfig,
+	type MigratedDevice,
 	type MigratedMeasurement,
 	type Phase,
 	type PhaseProgress,
@@ -22,6 +34,103 @@ import {
 /** Stops at explicit phase boundaries and inside long loops when the caller aborts. */
 export function throwIfAborted(dependencies: MigrationDependencies) {
 	dependencies.signal?.throwIfAborted()
+}
+
+async function recordMeasurementQualityEvent(
+	config: MigrationConfig,
+	dependencies: MigrationDependencies,
+	event: CanonicalSourceMeasurementEvent,
+) {
+	if (event.kind === 'accepted') return
+	await dependencies.app.reject(config.runId, {
+		phase: 'measurements',
+		sourceCollection: 'measurements',
+		sourceId: event.sourceId,
+		code: event.code,
+		details: event.details,
+	})
+}
+
+/**
+ * Applies the later backup's complete metadata snapshot before catchup phases run.
+ * Raw measurements are preserved for partition reconciliation. Generated baseline
+ * API keys are retained for devices that still have no legacy token.
+ */
+export async function prepareCatchupTargets(
+	config: MigrationConfig,
+	dependencies: MigrationDependencies,
+	snapshot: SourceSnapshot,
+) {
+	if ((config.mode ?? 'single') !== 'catchup' || !config.parentRunId) return
+	const users = snapshot.users
+		.map((user) => transformUser(user))
+		.filter(
+			(result): result is Extract<typeof result, { ok: true }> =>
+				result.ok && snapshot.retainedUserIds.has(result.value.id),
+		)
+		.map((result) => result.value)
+
+	const [baselineApiKeys, currentApiKeys] = await Promise.all([
+		dependencies.app.deviceApiKeys(config.parentRunId),
+		dependencies.app.deviceApiKeys(config.runId),
+	])
+	const existingApiKeys = new Map([...baselineApiKeys, ...currentApiKeys])
+	const sensorIds = validSensorIds(snapshot)
+	const devices: Array<{ value: MigratedDevice; apiKey: string }> = []
+	const usedApiKeys = new Map<string, string>()
+	for (const deviceId of [...snapshot.migratableDeviceIds].sort()) {
+		const box = snapshot.boxById.get(deviceId)!
+		const transformed = transformDevice(
+			box,
+			snapshot.ownerByDeviceId.get(deviceId) ?? ORPHAN_USER_ID,
+			sensorIds,
+			snapshot.sensorTargetIdByOccurrence,
+		)
+		if (!transformed.ok) {
+			throw new Error(
+				`Catchup metadata transform failed for device ${deviceId}: ${transformed.code}`,
+			)
+		}
+		const sourceToken = legacyAccessToken(box)
+		const apiKey =
+			sourceToken ?? existingApiKeys.get(deviceId) ?? selectDeviceApiKey(box)
+		const priorDeviceId = usedApiKeys.get(apiKey)
+		if (priorDeviceId && priorDeviceId !== deviceId) {
+			throw new Error(
+				`Catchup API key collision between devices ${priorDeviceId} and ${deviceId}`,
+			)
+		}
+		usedApiKeys.set(apiKey, deviceId)
+		devices.push({ value: transformed.value, apiKey })
+	}
+
+	await dependencies.app.reconcileCatchupMetadata(
+		config.parentRunId,
+		config.runId,
+		users,
+		devices,
+		config.to,
+	)
+	const prunedMeasurements = await dependencies.app.pruneCatchupMeasurements(
+		config.parentRunId,
+		config.runId,
+		config.from,
+		config.to,
+	)
+	await Promise.all([
+		dependencies.mqtt?.resetForCatchup(),
+		dependencies.ttn?.resetForCatchup(),
+	])
+	Object.assign(dependencies.report.preflight, {
+		catchupPreparation: {
+			users: users.length,
+			devices: devices.length,
+			sensors: sensorIds.size,
+			prunedMeasurements,
+			integrationsReset: !config.dryRun,
+			plannedOnly: config.dryRun,
+		},
+	})
 }
 
 /** Creates phase counters, carrying forward durable counts when a run resumes. */
@@ -288,6 +397,178 @@ export async function measurementsPhase(
 }
 
 /**
+ * Reconciles a later immutable backup against baseline raw measurements. Source
+ * and target are scanned once per sensor, then only differing UTC-month
+ * partitions are replaced. The phase cursor advances only after a whole month is
+ * verified, so an interrupted month is safely deleted and rebuilt on resume.
+ */
+export async function catchupMeasurementsPhase(
+	config: MigrationConfig,
+	dependencies: MigrationDependencies,
+	snapshot: SourceSnapshot,
+	progress?: PhaseProgress | null,
+) {
+	const result = newPhaseResult('measurements', progress)
+	const lastPartitionKey =
+		typeof progress?.cursor?.partitionKey === 'string'
+			? progress.cursor.partitionKey
+			: null
+	const sourceSensorIds = validSensorIds(snapshot)
+	const targetSensorIds = new Set(
+		await dependencies.app.measurementSensorIds(config.from, config.to),
+	)
+	const sensorIds = [
+		...new Set([...sourceSensorIds, ...targetSensorIds]),
+	].sort()
+	const window = { from: config.from, to: config.to }
+	const importFrom = config.measurementImportFrom ?? config.from
+	let matchedPartitions = 0
+	let replacedPartitions = 0
+	let deletedRows = 0
+
+	for (const sensorId of sensorIds) {
+		throwIfAborted(dependencies)
+		const [sourceDigests, targetDigests] = await Promise.all([
+			sourceSensorIds.has(sensorId)
+				? sourceMeasurementDigestsByUtcMonth(
+						dependencies.source,
+						sensorId,
+						window,
+					)
+				: Promise.resolve(new Map()),
+			targetMeasurementDigestsByUtcMonth(dependencies.app, sensorId, window),
+		])
+		const monthKeys = [
+			...new Set([...sourceDigests.keys(), ...targetDigests.keys()]),
+		].sort()
+
+		for (const monthKey of monthKeys) {
+			const partitionKey = measurementPartitionKey(sensorId, monthKey)
+			if (lastPartitionKey && partitionKey <= lastPartitionKey) continue
+			throwIfAborted(dependencies)
+			const bounds = clippedUtcMonthBounds(monthKey, window)
+			if (!bounds) continue
+			const source = sourceDigests.get(monthKey) ?? emptyMeasurementDigest()
+			const target = targetDigests.get(monthKey) ?? emptyMeasurementDigest()
+			result.sourceSeen +=
+				source.count + (source.rejected ?? 0) + (source.duplicates ?? 0)
+			result.rejected += source.rejected ?? 0
+			result.skipped += source.duplicates ?? 0
+
+			if (measurementDigestsEqual(source, target)) {
+				matchedPartitions++
+				result.skipped += source.count
+				if (
+					!config.dryRun &&
+					((source.rejected ?? 0) > 0 || (source.duplicates ?? 0) > 0)
+				) {
+					for await (const event of canonicalSourceMeasurementEvents(
+						dependencies.source,
+						sensorId,
+						bounds,
+					)) {
+						throwIfAborted(dependencies)
+						await recordMeasurementQualityEvent(config, dependencies, event)
+					}
+				}
+				await dependencies.app.saveManifest({
+					runId: config.runId,
+					entity: 'measurement-catchup',
+					partitionKey,
+					expectedCount: source.count,
+					sourceSha256: source.sha256,
+					targetCount: target.count,
+					targetSha256: target.sha256,
+					details: {
+						month: monthKey,
+						from: bounds.from.toISOString(),
+						to: bounds.to.toISOString(),
+						matches: true,
+						replaced: false,
+						rejected: source.rejected ?? 0,
+						duplicates: source.duplicates ?? 0,
+					},
+				})
+				await checkpoint(config, dependencies, result, { partitionKey })
+				continue
+			}
+
+			replacedPartitions++
+			if (config.dryRun) {
+				deletedRows += target.count
+				result.written += source.count
+				await checkpoint(config, dependencies, result, { partitionKey })
+				continue
+			}
+			deletedRows += await dependencies.app.deleteMeasurementPartition(
+				sensorId,
+				bounds.from,
+				bounds.to,
+			)
+			const batch: MigratedMeasurement[] = []
+			if (sourceSensorIds.has(sensorId)) {
+				for await (const event of canonicalSourceMeasurementEvents(
+					dependencies.source,
+					sensorId,
+					bounds,
+				)) {
+					throwIfAborted(dependencies)
+					if (event.kind !== 'accepted') {
+						await recordMeasurementQualityEvent(config, dependencies, event)
+						continue
+					}
+					batch.push(event.measurement)
+					if (batch.length >= config.batchSize) {
+						await flushMeasurementBatch({ dependencies, result, batch })
+					}
+				}
+			}
+			if (batch.length > 0) {
+				await flushMeasurementBatch({ dependencies, result, batch })
+			}
+			const finalTarget = await targetMeasurementDigest(
+				dependencies.app,
+				sensorId,
+				bounds,
+			)
+			if (!measurementDigestsEqual(source, finalTarget)) {
+				throw new Error(
+					`Catchup measurement partition ${partitionKey} does not match the source after replacement`,
+				)
+			}
+			await dependencies.app.saveManifest({
+				runId: config.runId,
+				entity: 'measurement-catchup',
+				partitionKey,
+				expectedCount: source.count,
+				sourceSha256: source.sha256,
+				targetCount: finalTarget.count,
+				targetSha256: finalTarget.sha256,
+				details: {
+					month: monthKey,
+					from: bounds.from.toISOString(),
+					to: bounds.to.toISOString(),
+					matches: true,
+					replaced: true,
+					tail: bounds.to > importFrom,
+					rejected: source.rejected ?? 0,
+					duplicates: source.duplicates ?? 0,
+				},
+			})
+			await checkpoint(config, dependencies, result, { partitionKey })
+		}
+	}
+	result.details = {
+		matchedPartitions,
+		replacedPartitions,
+		deletedRows,
+		importFrom,
+		plannedOnly: config.dryRun,
+	}
+	return result
+}
+
+/**
  * Transforms MQTT and TTN settings independently per device, auditing malformed
  * settings while checkpointing only after both integration decisions are complete.
  */
@@ -447,10 +728,14 @@ export async function finalizePhase(
 	result.written = 1
 
 	if (config.refreshAggregates) {
+		const aggregateFrom =
+			(config.mode ?? 'single') === 'catchup' && config.parentRunId
+				? (await dependencies.app.migrationRunWindow(config.parentRunId)).from
+				: config.from
 		for (const view of CAGGS) {
 			await dependencies.app.refreshContinuousAggregate(
 				view,
-				config.from,
+				aggregateFrom,
 				config.to,
 			)
 		}

@@ -116,6 +116,13 @@ export class IntegrationTarget {
 		}
 	}
 
+	/** Clears a verified dark integration target before authoritative re-import. */
+	async resetForCatchup() {
+		if (this.dryRun) return
+		const table = this.kind === 'mqtt' ? 'mqtt_integration' : 'ttn_integration'
+		await this.sql.unsafe(`DELETE FROM ${table}`)
+	}
+
 	async insertMqtt(integration: MigratedMqttIntegration, cutoff: Date) {
 		if (this.kind !== 'mqtt') throw new Error('Not an MQTT target')
 		if (this.dryRun) return

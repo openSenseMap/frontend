@@ -15,6 +15,12 @@ export type Phase = (typeof PHASES)[number]
 
 export type MigrationSourceKind = 'restored-backup' | 'production-readonly'
 
+/**
+ * `single` preserves the original one-shot migration. A staged migration consists
+ * of one `baseline` run followed by one explicitly linked `catchup` run.
+ */
+export type MigrationMode = 'single' | 'baseline' | 'catchup'
+
 export type LegacyId = ObjectId | string
 
 export type LegacyLocation = {
@@ -230,12 +236,17 @@ export type PausedJob = {
 
 export type MigrationConfig = {
 	runId: string
+	/** Optional only for backwards-compatible programmatic callers; CLI always sets it. */
+	mode?: MigrationMode
+	parentRunId?: string
 	phases: Phase[]
 	dryRun: boolean
 	resume: boolean
 	sourceKind: MigrationSourceKind
 	backupId?: string
 	from: Date
+	/** Lower bound of the cheap append window; reconciliation still covers `from`. */
+	measurementImportFrom?: Date
 	to: Date
 	archiveBefore: Date
 	batchSize: number

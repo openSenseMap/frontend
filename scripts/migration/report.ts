@@ -34,6 +34,8 @@ export class MigrationReport {
 		readonly runId: string,
 		readonly dryRun: boolean,
 		readonly resumed = false,
+		readonly mode: 'single' | 'baseline' | 'catchup' = 'single',
+		readonly parentRunId?: string,
 	) {}
 
 	addPhase(result: PhaseResult) {
@@ -56,6 +58,8 @@ export class MigrationReport {
 	toJSON() {
 		return {
 			runId: this.runId,
+			mode: this.mode,
+			parentRunId: this.parentRunId ?? null,
 			dryRun: this.dryRun,
 			resumed: this.resumed,
 			status: this.status,

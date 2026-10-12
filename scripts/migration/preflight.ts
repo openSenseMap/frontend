@@ -5,6 +5,12 @@ import { subtractUtcMonths } from './config'
 import { type MigrationDependencies } from './context'
 import { validateApiKeyPolicy } from './device-credentials'
 import {
+	emptyMeasurementDigest,
+	measurementDigestsEqual,
+	measurementPartitionKey,
+	targetMeasurementDigestsByUtcMonth,
+} from './measurement-partitions'
+import {
 	legacyId,
 	transformMqttIntegration,
 	transformTtnIntegration,
@@ -19,6 +25,89 @@ export const CAGGS = [
 	'measurement_1month',
 	'measurement_1year',
 ]
+
+/**
+ * Recomputes the completed baseline's monthly target manifests before the first
+ * catchup write. This detects known-sensor changes that ID ownership checks alone
+ * cannot see and makes the "dark target" assumption explicit and auditable.
+ */
+async function assertBaselineMeasurementSeal(
+	dependencies: MigrationDependencies,
+	parentRunId: string,
+	from: Date,
+	to: Date,
+) {
+	const rows = await dependencies.app.manifestRows(parentRunId, 'measurement')
+	const expected = new Map(rows.map((row) => [row.partitionKey, row]))
+	for (const row of rows) {
+		if (
+			typeof row.details.sensorId !== 'string' ||
+			typeof row.details.month !== 'string' ||
+			row.details.matches !== true ||
+			row.targetCount === null ||
+			row.sourceSha256 === null ||
+			row.targetSha256 === null ||
+			row.expectedCount !== row.targetCount ||
+			row.sourceSha256 !== row.targetSha256
+		) {
+			throw new Error(
+				'Baseline measurement seal is missing or was not validated by UTC month',
+			)
+		}
+	}
+
+	const sensorIds = new Set(
+		rows.flatMap((row) =>
+			typeof row.details.sensorId === 'string' ? [row.details.sensorId] : [],
+		),
+	)
+	for (const sensorId of await dependencies.app.measurementSensorIds(
+		from,
+		to,
+	)) {
+		sensorIds.add(sensorId)
+	}
+	const actualKeys = new Set<string>()
+	for (const sensorId of [...sensorIds].sort()) {
+		const digests = await targetMeasurementDigestsByUtcMonth(
+			dependencies.app,
+			sensorId,
+			{ from, to },
+		)
+		for (const [month, digest] of digests) {
+			const key = measurementPartitionKey(sensorId, month)
+			actualKeys.add(key)
+			const sealed = expected.get(key)
+			if (
+				!sealed ||
+				!measurementDigestsEqual(digest, {
+					count: sealed.targetCount ?? 0,
+					sha256: sealed.targetSha256 ?? emptyMeasurementDigest().sha256,
+				})
+			) {
+				throw new Error(`Baseline measurement target seal changed: ${key}`)
+			}
+		}
+	}
+	const missing = [...expected].flatMap(([key, row]) =>
+		(row.targetCount ?? 0) > 0 && !actualKeys.has(key) ? [key] : [],
+	)
+	if (missing.length > 0) {
+		throw new Error(
+			`Baseline measurement target seal is missing partitions: ${missing.slice(0, 20).join(', ')}`,
+		)
+	}
+	const outside = await dependencies.app.measurementsOutsideOwnedWindow(
+		parentRunId,
+		from,
+		to,
+	)
+	if (outside > 0) {
+		throw new Error(
+			`Baseline target has ${outside} measurement rows outside its recorded window`,
+		)
+	}
+}
 
 const FATAL_SOURCE_ANOMALIES = new Set([
 	'device_missing_id',
@@ -51,6 +140,7 @@ const REQUIRED_APP_COLUMNS = [
 	'profile.user_id',
 	'location.id',
 	'location.location',
+	'location.height_above_ground',
 	'device.id',
 	'device.name',
 	'device.image',
@@ -459,7 +549,36 @@ export async function preflight(
 	) {
 		throw new Error('MQTT or TTN target column contract is incomplete')
 	}
-	if (config.resume) {
+	if ((config.mode ?? 'single') === 'catchup') {
+		if (!config.parentRunId) {
+			throw new Error('Catchup mode requires a parent baseline run')
+		}
+		const parent = await app.assertCatchupLineage(config)
+		await app.assertCatchupTarget(
+			config.parentRunId,
+			config.runId,
+			config.resume,
+		)
+		const preflightProgress = await app.phaseProgress(config.runId, 'preflight')
+		const baselineSealAlreadyVerified =
+			preflightProgress?.status === 'completed' ||
+			preflightProgress?.cursor?.stage === 'catchup-baseline-seal-verified'
+		if (!baselineSealAlreadyVerified) {
+			await assertBaselineMeasurementSeal(
+				dependencies,
+				config.parentRunId,
+				parent.fromTime,
+				parent.toTime,
+			)
+		}
+		const expected = expectedEntityIds(snapshot, !config.skipImages)
+		const [parentMqttIds, parentTtnIds] = await Promise.all([
+			app.entityIds(config.parentRunId, 'mqtt'),
+			app.entityIds(config.parentRunId, 'ttn'),
+		])
+		await mqtt.assertResumable(new Set([...parentMqttIds, ...expected.mqtt]))
+		await ttn.assertResumable(new Set([...parentTtnIds, ...expected.ttn]))
+	} else if (config.resume) {
 		const expected = expectedEntityIds(snapshot, !config.skipImages)
 		await app.assertResumeTarget(config.runId, config.from, config.to)
 		await mqtt.assertResumable(new Set(expected.mqtt))
