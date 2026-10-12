@@ -9,7 +9,7 @@ COPY --chown=vp:vp . .
 RUN vp run build
 
 # Migration script needs to be compiled to js to be run at startup
-RUN tsdown ./scripts/db/migrate.ts --out-dir build/scripts
+RUN vp pack ./scripts/db/migrate.ts --out-dir build/scripts
 
 RUN cp "$(vp env which node | head -1)" /tmp/node
 
