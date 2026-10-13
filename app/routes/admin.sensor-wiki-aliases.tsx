@@ -118,8 +118,8 @@ export default function AdminSensorWikiAliasesRoute({
 					<div>
 						<h2 className="text-2xl font-semibold">Sensor-Wiki aliases</h2>
 						<p className="text-muted-foreground mt-1 text-sm">
-							Edit the database-backed alias table. If this table is empty, the
-							app falls back to the bundled aliases in code.
+							Runtime matching uses this database table directly. Bundled
+							aliases are only imported through the seed action.
 						</p>
 					</div>
 					<Form method="post">
@@ -156,8 +156,9 @@ export default function AdminSensorWikiAliasesRoute({
 
 				{aliases.length === 0 ? (
 					<p className="text-muted-foreground rounded-md border p-4 text-sm">
-						No database aliases exist yet. Use the seed action above to copy the
-						bundled alias table into the database.
+						No aliases are configured, so alias suggestions and inferred
+						matching are disabled. Create entries manually or use the seed
+						action to import the bundled defaults.
 					</p>
 				) : (
 					<div className="space-y-4">
