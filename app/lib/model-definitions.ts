@@ -163,12 +163,58 @@ export const modelDefinitions = {
 	hackair_home_v2: luftdatenSds011,
 } as const
 
-export const getSensorsForModel = (model: string) => {
+const normalizeSensorTemplate = (value: string) =>
+	value.toLowerCase().replace(/[\s_-]+/g, '')
+
+export const getSensorsForModel = (
+	model: string,
+	sensorTemplates?: readonly string[],
+) => {
 	const keys = modelDefinitions[model as keyof typeof modelDefinitions]
 	if (!keys) return undefined
 
-	return keys.map((key) => ({
+	const sensors = keys.map((key) => ({
 		id: key,
 		...sensorDefinitions[key],
 	}))
+
+	if (!sensorTemplates?.length) return sensors
+
+	const normalizedTemplates = new Set(
+		sensorTemplates.map(normalizeSensorTemplate),
+	)
+
+	return sensors.filter(
+		(sensor) =>
+			normalizedTemplates.has(normalizeSensorTemplate(sensor.id)) ||
+			normalizedTemplates.has(normalizeSensorTemplate(sensor.sensorType)),
+	)
+}
+
+export const getSensorTemplateValidationError = (
+	model: string | undefined,
+	sensorTemplates: readonly string[] | undefined,
+): string | undefined => {
+	if (!sensorTemplates?.length) return undefined
+	if (!model || model === 'custom') {
+		return 'sensorTemplates requires a predefined model.'
+	}
+
+	const modelSensors = getSensorsForModel(model)
+	if (!modelSensors) return `Unknown model: ${model}`
+
+	const unsupportedTemplates = sensorTemplates.filter((template) => {
+		const normalizedTemplate = normalizeSensorTemplate(template)
+		return !modelSensors.some(
+			(sensor) =>
+				normalizeSensorTemplate(sensor.id) === normalizedTemplate ||
+				normalizeSensorTemplate(sensor.sensorType) === normalizedTemplate,
+		)
+	})
+
+	if (unsupportedTemplates.length > 0) {
+		return `Unsupported sensor templates for model ${model}: ${unsupportedTemplates.join(', ')}`
+	}
+
+	return undefined
 }
