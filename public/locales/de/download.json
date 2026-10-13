@@ -31,5 +31,6 @@
 	"generateFile": "Datei generieren",
 	"downloading": "Wird heruntergeladen...",
 	"data": "Daten",
-	"activeFiltersApplied": "Der Download berücksichtigt die aktiven Filter der Karte."
+	"activeFiltersApplied": "Der Download berücksichtigt die aktiven Filter der Karte.",
+	"invalidDownloadLink": "Der erzeugte Download-Link ist ungültig. Bitte versuchen Sie es erneut."
 }

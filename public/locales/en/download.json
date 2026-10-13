@@ -31,5 +31,6 @@
 	"generateFile": "Generate File",
 	"downloading": "Downloading...",
 	"data": "Data",
-	"activeFiltersApplied": "The currently active filters will be applied to this download."
+	"activeFiltersApplied": "The currently active filters will be applied to this download.",
+	"invalidDownloadLink": "The generated download link is invalid. Please try again."
 }
