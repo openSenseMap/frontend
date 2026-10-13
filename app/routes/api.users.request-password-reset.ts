@@ -16,6 +16,7 @@ import {
 } from '~/lib/openapi/errors'
 
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
+import { OkMessageResponseSchema } from '~/lib/openapi/schemas/common'
 
 const RequestPasswordResetRequestSchema = z
 	.object({
@@ -40,19 +41,6 @@ const RequestPasswordResetRequestSchema = z
 	.meta({
 		id: 'RequestPasswordResetRequest',
 		description: 'Payload for requesting a password reset.',
-	})
-
-const RequestPasswordResetResponseSchema = z
-	.object({
-		code: z.literal('Ok').default('Ok'),
-		message: z
-			.literal('Password reset initiated')
-			.default('Password reset initiated'),
-	})
-	.meta({
-		id: 'RequestPasswordResetResponse',
-		description:
-			'Password reset initiation response. This response is returned regardless of whether the email address belongs to an existing user.',
 	})
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -82,7 +70,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Password reset initiated.',
 				content: {
 					'application/json': {
-						schema: RequestPasswordResetResponseSchema,
+						schema: OkMessageResponseSchema,
 					},
 				},
 			},
@@ -122,11 +110,10 @@ export const action = async ({ request }: Route.ActionArgs) => {
 	try {
 		await requestPasswordReset(parsedRequest.email)
 
-		const responseParsed =
-			await RequestPasswordResetResponseSchema.safeParseAsync({
-				code: 'Ok',
-				message: 'Password reset initiated',
-			})
+		const responseParsed = await OkMessageResponseSchema.safeParseAsync({
+			code: 'Ok',
+			message: 'Password reset initiated',
+		})
 
 		if (!responseParsed.success) {
 			return StandardResponse.internalServerError()

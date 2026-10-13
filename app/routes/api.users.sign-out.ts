@@ -5,7 +5,7 @@ import {
 	forbiddenResponse,
 	InternalServerErrorSchema,
 	internalServerErrorResponse,
-	messageResponse,
+	okMessageResponse,
 } from '~/lib/openapi/errors'
 import { apiMessages } from '~/lib/openapi/messages'
 import { StandardResponse } from '~/lib/responses'
@@ -18,7 +18,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		description: 'Revokes the supplied JWT access token.',
 		security: [{ bearerAuth: [] }],
 		responses: {
-			200: messageResponse('Successfully signed out.'),
+			200: okMessageResponse('Successfully signed out.'),
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
 				'Invalid or missing JWT authorization.',

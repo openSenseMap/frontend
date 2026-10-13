@@ -17,6 +17,7 @@ import {
 	unsupportedMediaTypeResponse,
 } from '~/lib/openapi/errors'
 import { NewPasswordSchema } from '~/lib/openapi/schemas/auth'
+import { OkMessageResponseSchema } from '~/lib/openapi/schemas/common'
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
 
 const PasswordResetRequestSchema = z
@@ -39,22 +40,6 @@ const PasswordResetRequestSchema = z
 	.meta({
 		id: 'PasswordResetRequest',
 		description: 'Payload for resetting a password using an email token.',
-	})
-
-const PasswordResetResponseSchema = z
-	.object({
-		code: z.literal('Ok').default('Ok'),
-		message: z
-			.literal(
-				'Password successfully changed. You can now login with your new password',
-			)
-			.default(
-				'Password successfully changed. You can now login with your new password',
-			),
-	})
-	.meta({
-		id: 'PasswordResetResponse',
-		description: 'Password reset success response.',
 	})
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -84,7 +69,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 				description: 'Password changed successfully.',
 				content: {
 					'application/json': {
-						schema: PasswordResetResponseSchema,
+						schema: OkMessageResponseSchema,
 					},
 				},
 			},
@@ -147,13 +132,11 @@ export const action = async ({ request }: Route.ActionArgs) => {
 				)
 
 			case 'success': {
-				const responseParsed = await PasswordResetResponseSchema.safeParseAsync(
-					{
-						code: 'Ok',
-						message:
-							'Password successfully changed. You can now login with your new password',
-					},
-				)
+				const responseParsed = await OkMessageResponseSchema.safeParseAsync({
+					code: 'Ok',
+					message:
+						'Password successfully changed. You can now login with your new password',
+				})
 
 				if (!responseParsed.success) {
 					return StandardResponse.internalServerError()
