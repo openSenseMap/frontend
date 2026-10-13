@@ -112,7 +112,7 @@ export async function getActiveSensorWikiAliasEntries(): Promise<
 			sensorTypeAliases: row.sensorTypeAliases,
 		}))
 	} catch (error) {
-		console.warn(
+		console.error(
 			'Sensor-Wiki aliases could not be loaded from the database.',
 			error,
 		)
