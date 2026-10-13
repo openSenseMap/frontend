@@ -90,7 +90,7 @@ export function CustomDeviceConfig() {
 	const { t } = useTranslation('newdevice')
 
 	const sensorSuggestions = useMemo(
-		() => getSensorWikiAliasSuggestions(newSensor, 5, sensorWikiAliasEntries),
+		() => getSensorWikiAliasSuggestions(newSensor, sensorWikiAliasEntries, 5),
 		[newSensor, sensorWikiAliasEntries],
 	)
 	const sensorWikiMatch = useMemo(

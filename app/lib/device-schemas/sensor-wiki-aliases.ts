@@ -349,7 +349,7 @@ export function normalizeSensorWikiAliasValue(value?: string | null) {
 
 export function matchSensorWikiAlias(
 	input: SensorWikiAliasInput,
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ): SensorWikiAliasMatch | undefined {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
@@ -392,8 +392,8 @@ export function matchSensorWikiAlias(
 
 export function getSensorWikiAliasSuggestions(
 	input: SensorWikiAliasInput,
+	entries: SensorWikiAliasEntry[],
 	limit = 5,
-	entries: SensorWikiAliasEntry[] = [],
 ): SensorWikiAliasSuggestion[] {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
