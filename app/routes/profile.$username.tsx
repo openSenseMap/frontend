@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { redirect, useLoaderData } from 'react-router'
 import { type Route } from './+types/profile.$username'
 import { getColumns, type SenseBox } from '~/components/mydevices/dt/columns'
-import { CustomTableFeatures, DataTable } from '~/components/mydevices/dt/data-table'
+import {
+	CustomTableFeatures,
+	DataTable,
+} from '~/components/mydevices/dt/data-table'
 import { NavBar } from '~/components/nav-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
@@ -205,7 +208,11 @@ export default function ProfilePage() {
 
 						{profile?.user?.devices && (
 							<DataTable
-								columns={getColumns(columnsTranslation, hydrated, { isOwner }) as ColumnDef<CustomTableFeatures, RowData, unknown>[]}
+								columns={
+									getColumns(columnsTranslation, hydrated, {
+										isOwner,
+									}) as ColumnDef<CustomTableFeatures, RowData, unknown>[]
+								}
 								data={profile.user.devices}
 								getRowClassName={(device) =>
 									device.archivedAt
