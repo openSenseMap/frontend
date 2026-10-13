@@ -49,11 +49,17 @@ const PostSensorMeasurementHeaderParamsSchema = z
 
 const PostSensorMeasurementRequestSchema = z
 	.object({
-		value: z.number().meta({
-			description:
-				'Measured value of the sensor. Legacy documentation says string, but runtime requires a JSON number.',
-			example: 21.5,
-		}),
+		value: z
+			.union([z.number(), z.string().trim().min(1)])
+			.transform((value) => (typeof value === 'number' ? value : Number(value)))
+			.refine(Number.isFinite, {
+				message: 'Measurement value must be numeric',
+			})
+			.meta({
+				description:
+					'Measured value of the sensor. JSON numbers and legacy numeric strings are accepted.',
+				example: 21.5,
+			}),
 
 		createdAt: IsoDateTimeSchema.optional().meta({
 			description:
@@ -72,7 +78,7 @@ const PostSensorMeasurementSuccessResponseSchema = z.string().meta({
 	id: 'PostSensorMeasurementSuccessResponse',
 	description:
 		'Plain text success response returned after the measurement was saved.',
-	example: 'Measurement saved in box',
+	example: 'Measurement saved in device',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -241,7 +247,7 @@ export const action = async ({
 		timing?.mark('postSingleMeasurement')
 
 		timing?.finish({ status: 201 })
-		return new Response('Measurement saved in box', {
+		return new Response('Measurement saved in device', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',
