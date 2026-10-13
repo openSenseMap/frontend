@@ -32,5 +32,6 @@
 	"downloading": "Wird heruntergeladen...",
 	"data": "Daten",
 	"activeFiltersApplied": "Der Download berücksichtigt die aktiven Filter der Karte.",
+	"downloadFailed": "Der Download konnte nicht vorbereitet werden. Bitte versuchen Sie es erneut.",
 	"invalidDownloadLink": "Der erzeugte Download-Link ist ungültig. Bitte versuchen Sie es erneut."
 }

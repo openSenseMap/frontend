@@ -61,6 +61,8 @@ type DownloadFields = {
   coordinates: boolean;
 };
 
+type DownloadError = "request-failed" | "invalid-download-link";
+
 const DEFAULT_FIELDS: DownloadFields = {
   title: true,
   unit: true,
@@ -194,7 +196,7 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
   const [isDownloadReady, setIsDownloadReady] = useState(false);
   const [showReadyAnimation, setShowReadyAnimation] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<DownloadError | null>(null);
 
   const isBusy = fetcher.state !== "idle";
   const hasSelectedFields = Object.values(fields).some(Boolean);
@@ -217,7 +219,7 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
     setIsDownloadReady(false);
     setShowReadyAnimation(false);
     setDownloadStarted(false);
-    setErrorMessage(null);
+    setDownloadError(null);
   };
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
@@ -283,7 +285,7 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
     }
 
     if ("error" in actionData && actionData.error) {
-      setErrorMessage(actionData.error);
+      setDownloadError("request-failed");
       setIsDownloadReady(false);
       setShowReadyAnimation(false);
       return;
@@ -291,13 +293,13 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
 
     if ("href" in actionData && actionData.href) {
       if (!isSafeDownloadHref(actionData.href)) {
-        setErrorMessage("invalid-download-link");
+        setDownloadError("invalid-download-link");
         setIsDownloadReady(false);
         setShowReadyAnimation(false);
         return;
       }
 
-      setErrorMessage(null);
+      setDownloadError(null);
       setIsDownloadReady(true);
       setShowReadyAnimation(true);
     }
@@ -429,12 +431,12 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
             ) : null}
           </div>
 
-          {errorMessage && (
+          {downloadError && (
             <div className="flex min-w-0 items-center gap-3 rounded-md border border-red-300 bg-red-100 p-3 text-red-700">
               <AlertTriangle className="h-8 w-8 shrink-0 animate-pulse text-red-500" />
 
               <p className="min-w-0 text-sm wrap-break-word">
-                {errorMessage === "invalid-download-link" ? (
+                {downloadError === "invalid-download-link" ? (
                   t("invalidDownloadLink")
                 ) : actionData && "link" in actionData && actionData.link ? (
                   <>
@@ -450,7 +452,7 @@ export default function Download({ devices, open, onOpenChange }: DownloadProps)
                     {t("toGoToArchive")}
                   </>
                 ) : (
-                  errorMessage
+                  t("downloadFailed")
                 )}
               </p>
             </div>
