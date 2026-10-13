@@ -35,11 +35,16 @@ const UpdateDeviceTransferRequestSchema = z
 		token: DeviceTransferTokenSchema,
 
 		expiresAt: z
-			.string()
-			.trim()
-			.min(1)
-			.pipe(z.iso.datetime({ offset: true }))
-			.optional()
+			.preprocess(
+				(value) =>
+					typeof value === 'string' && value.trim() === '' ? undefined : value,
+				z
+					.string()
+					.trim()
+					.min(1)
+					.pipe(z.iso.datetime({ offset: true }))
+					.optional(),
+			)
 			.meta({
 				description:
 					'New expiration date for the transfer token. Must be in the future.',
