@@ -111,11 +111,11 @@ export function getMeasurementTimeRangeFromSearchParams(
 			}
 
 			const from = parseUtcDate(fromValue, 'from')
-			const to = addUtcDays(parseUtcDate(toValue, 'to'), 1)
-			if (from > to) {
+			const toDay = parseUtcDate(toValue, 'to')
+			if (from > toDay) {
 				throw new MeasurementTimeRangeError('from must not be after to.')
 			}
-			return { from, to }
+			return { from, to: addUtcDays(toDay, 1) }
 		}
 
 		return undefined
