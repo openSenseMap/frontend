@@ -69,7 +69,7 @@ export async function* streamMeasurementExportRows({
 	let dateCondition = ''
 	if (hasDateRange) {
 		values.push(fromDate.toISOString(), toDate.toISOString())
-		dateCondition = 'AND source.time BETWEEN $2 AND $3'
+		dateCondition = 'AND source.time >= $2 AND source.time < $3'
 	}
 
 	const locationIdColumn = isRaw
