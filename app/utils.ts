@@ -96,7 +96,7 @@ export function validatePassLength(passwords: any) {
 export function getFilteredDevices(
 	devices: any,
 	filterParams: URLSearchParams,
-	sensorWikiAliasEntries?: SensorWikiAliasEntry[],
+	sensorWikiAliasEntries: SensorWikiAliasEntry[],
 ) {
 	const statusFilter = filterParams.get('status')?.toLowerCase().split(',') || [
 		'all',
