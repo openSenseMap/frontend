@@ -238,7 +238,7 @@ function createDownloadFilename(
 	params: string[],
 	format: string,
 ) {
-	return `opensensemap_org-${action}-${encodeURI(encodeURI(params.join('-')))}-${date
+	return `opensensemap_org-${action}-${encodeURI(params.join('-'))}-${date
 		.toISOString()
 		.replace(/-|:|\.\d*Z/g, '')
 		.replace('T', '_')}.${format}`
