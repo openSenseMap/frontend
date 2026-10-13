@@ -2,10 +2,7 @@ import { z } from 'zod'
 import { type Params } from 'react-router'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { type Route } from './+types/api.boxes.$deviceId.locations'
-import {
-	getDeviceWithoutSensors,
-	getLocations,
-} from '~/db/models/device.server'
+import { deviceExists, getLocations } from '~/db/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
 
@@ -163,9 +160,8 @@ export const loader = async ({
 		if (collected instanceof Response) return collected
 
 		const { deviceId, fromDate, toDate, format } = collected
-		const device = await getDeviceWithoutSensors({ id: deviceId })
 
-		if (!device) {
+		if (!(await deviceExists({ id: deviceId }))) {
 			return StandardResponse.notFound(apiMessages.deviceNotFound)
 		}
 

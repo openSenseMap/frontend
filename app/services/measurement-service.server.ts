@@ -2,6 +2,7 @@ import { type BoxesDataColumn } from '../lib/api-schemas/boxes-data-query-schema
 import { validLngLat } from '../lib/location'
 import { assertDeviceIsWritable } from './device-service.server'
 import {
+	deviceExists,
 	type DeviceWithoutSensors,
 	getDeviceWithoutSensors,
 	getDeviceForMeasurementWrite,
@@ -39,13 +40,10 @@ export async function getLatestMeasurementsForSensor(
 	sensorId: string,
 	count?: number,
 ): Promise<SensorWithLatestMeasurement | null> {
-	const device: DeviceWithoutSensors = await getDeviceWithoutSensors({
-		id: boxId,
-	})
-	if (!device) return null
+	if (!(await deviceExists({ id: boxId }))) return null
 
 	// single sensor, no need for having info about device
-	return await getSensorWithLastMeasurement(device.id, sensorId, count)
+	return await getSensorWithLastMeasurement(boxId, sensorId, count)
 }
 
 /**
