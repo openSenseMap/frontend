@@ -23,7 +23,7 @@ type ActionData = {
 	}
 }
 
-export async function loader({}: Route.LoaderArgs) {
+export async function loader() {
 	const aliases = await getSensorWikiAliasesForAdmin()
 	return { aliases }
 }

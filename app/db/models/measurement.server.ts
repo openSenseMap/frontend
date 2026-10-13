@@ -202,7 +202,7 @@ export async function saveMeasurements(
 			throw error
 		}
 
-		const measurementTime = new Date(m.createdAt || Date.now())
+		const measurementTime = new Date(m.createdAt || now)
 
 		if (measurementTime.getTime() > now.getTime() + maxFutureTime) {
 			const error = new Error(
@@ -212,6 +212,7 @@ export async function saveMeasurements(
 			;(error as any).type = 'UnprocessableEntityError'
 			throw error
 		}
+		m.createdAt = measurementTime
 
 		if (
 			!lastMeasurements[m.sensor_id] ||
@@ -257,7 +258,7 @@ export async function saveMeasurements(
 
 		const locations =
 			deviceLocationUpdates.length > 0
-				? await findOrCreateLocations(deviceLocationUpdates)
+				? await findOrCreateLocations(deviceLocationUpdates, tx)
 				: []
 		timing?.mark('findOrCreateLocations', {
 			locationCount: locations.length,
@@ -268,6 +269,7 @@ export async function saveMeasurements(
 				deviceLocationUpdates,
 				minimalDevice.id,
 				locations,
+				tx,
 			)
 		}
 		timing?.mark('addLocationUpdates')
@@ -277,8 +279,7 @@ export async function saveMeasurements(
 			locations,
 			minimalDevice.id,
 			tx,
-			{ shouldReturn: false },
-			timing,
+			{ shouldReturn: false, timing: timing },
 		)
 		timing?.mark('insertMeasurements')
 		await updateLastMeasurements(lastMeasurements, tx, timing)

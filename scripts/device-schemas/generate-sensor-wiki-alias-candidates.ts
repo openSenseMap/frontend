@@ -271,10 +271,7 @@ function bestTitleMatch(inputTitle: string, entry: SensorWikiAliasEntry) {
 	return aliases
 		.map((alias) => ({
 			alias,
-			score: titleSimilarity(
-				inputTitle,
-				normalizeSensorWikiAliasValue(alias),
-			),
+			score: titleSimilarity(inputTitle, normalizeSensorWikiAliasValue(alias)),
 		}))
 		.sort((left, right) => right.score - left.score)[0]
 }

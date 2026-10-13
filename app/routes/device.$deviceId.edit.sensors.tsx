@@ -368,11 +368,11 @@ export default function EditBoxSensors() {
 						{/* Heading */}
 						<div>
 							{/* Title */}
-							<div className="mt-2 flex justify-between">
+							<div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 								<div>
 									<h1 className="text-4xl">Sensor</h1>
 								</div>
-								<div className="flex items-center gap-3">
+								<div className="flex flex-wrap items-center gap-2 sm:gap-3">
 									<Button
 										type="button"
 										variant="outline"
@@ -501,19 +501,21 @@ export default function EditBoxSensors() {
 										}}
 										className="border-border hover:bg-muted/30 border-t p-4 first:border-t-0"
 									>
-										<div className="grid grid-cols-12">
+										<div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-3 sm:grid-cols-12 sm:gap-0">
 											{/* drag handle */}
 											{!sensor?.editing && (
-												<div className="col-span-1 m-auto flex cursor-grab items-center justify-center text-[#aaa] active:cursor-grabbing">
+												<div className="col-start-1 row-start-1 m-auto flex cursor-grab items-center justify-center text-[#aaa] active:cursor-grabbing sm:col-span-1 sm:col-start-auto sm:row-start-auto">
 													<GripVertical className="h-5 w-5" />
 												</div>
 											)}
-											{sensor?.editing && <div className="col-span-1" />}
+											{sensor?.editing && (
+												<div className="col-start-1 row-start-1 sm:col-span-1 sm:col-start-auto sm:row-start-auto" />
+											)}
 
 											{/* left side -> sensor icons list */}
-											<div className="col-span-1 m-auto sm:col-span-1">
+											<div className="col-start-1 row-start-2 m-auto sm:col-span-1 sm:col-start-auto sm:row-start-auto">
 												{sensor?.editing ? (
-													<span className="table-cell h-55.5 w-[30%] text-center align-middle">
+													<span className="table-cell text-center align-middle sm:h-55.5 sm:w-[30%]">
 														<div className="relative inline-block align-middle">
 															{/* view icon */}
 															<button
@@ -567,7 +569,7 @@ export default function EditBoxSensors() {
 														</div>
 													</span>
 												) : (
-													<span className="table-cell h-22.5 w-[30%] text-center align-middle">
+													<span className="table-cell text-center align-middle sm:h-22.5 sm:w-[30%]">
 														{sensor.icon
 															? getIcon(sensor.icon)
 															: assignIcon(sensor.sensorType, sensor.title)}
@@ -575,7 +577,7 @@ export default function EditBoxSensors() {
 												)}
 											</div>
 											{/* middle -> sensor attributes */}
-											<div className="border-border col-span-8 border-r sm:col-span-8">
+											<div className="border-border col-start-2 row-span-2 row-start-1 min-w-0 sm:col-span-8 sm:col-start-auto sm:row-span-1 sm:row-start-auto sm:border-r">
 												{/* shown by default */}
 												{!sensor?.editing && (
 													<span className="table-cell align-middle leading-[1.75]">
@@ -585,10 +587,12 @@ export default function EditBoxSensors() {
 																{sensor?.title}
 															</span>
 														</strong>
-														<span className="text-foreground inline-flex max-w-full items-center gap-1">
+														<span className="text-foreground flex max-w-full min-w-0 items-center gap-1">
 															<strong className="text-foreground">ID:</strong>
-															<div className="bg-muted text-muted-foreground border-border rounded-md border">
-																<code>{sensor.id}</code>
+															<div className="bg-muted text-muted-foreground border-border flex min-w-0 items-center rounded-md border">
+																<code className="min-w-0 truncate pl-1">
+																	{sensor.id}
+																</code>
 																<button
 																	type="button"
 																	aria-label={`Copy sensor ID ${sensor?.id}`}
@@ -629,7 +633,7 @@ export default function EditBoxSensors() {
 
 												{/* shown when edit button clicked */}
 												{sensor?.editing && (
-													<div className="mb-4 pr-4">
+													<div className="mb-4 sm:pr-4">
 														{isSchemaSensor && (
 															<div className="border-border bg-muted text-muted-foreground mb-4 rounded-md border p-3">
 																{t('schema_fields_locked')}
@@ -714,7 +718,7 @@ export default function EditBoxSensors() {
 											</div>
 
 											{/* right side -> Save, delete, cancel buttons */}
-											<div className="col-span-2 ml-4 sm:col-span-2">
+											<div className="col-span-2 min-w-0 border-t pt-3 sm:col-span-2 sm:ml-4 sm:border-t-0 sm:pt-0">
 												{/* buttons shown by default */}
 												<span className="table-cell align-middle leading-[1.6]">
 													{/* warning text - delete */}
@@ -778,7 +782,7 @@ export default function EditBoxSensors() {
 												</span>
 
 												{sensor?.editing && (
-													<div className="table-cell h-55.5 align-middle leading-[1.6]">
+													<div className="w-full align-middle leading-[1.6] sm:table-cell sm:h-55.5">
 														{sensor?.notValidInput && (
 															<div className="bg-destructive text-destructive-foreground mb-2 rounded-md px-2 py-1 text-xs font-medium">
 																{t('fill_required_fields')}

@@ -96,15 +96,19 @@ export default function DeviceDashboard() {
 	}
 
 	return (
-		<div className="space-y-6 px-10 pb-16 tracking-wide">
+		<div className="space-y-6 px-4 pb-16 tracking-wide sm:px-6 lg:px-10">
 			<NavBar />
 
 			{/* Left side - device info */}
-			<div className="grid h-[85vh] grid-cols-4 gap-x-4">
-				<Card className="col-span-1 dark:border-[#ffffff] dark:bg-black">
+			<div className="grid grid-cols-1 gap-4 lg:h-[85vh] lg:grid-cols-4">
+				<Card className="min-w-0 lg:col-span-1 lg:overflow-y-auto dark:border-[#ffffff] dark:bg-black">
 					<CardHeader className="space-y-0 p-4 pb-0">
-						<CardTitle className="text-[18px]">{deviceData.name}</CardTitle>
-						<CardDescription>{deviceData._id}</CardDescription>
+						<CardTitle className="truncate text-[18px]" title={deviceData.name}>
+							{deviceData.name}
+						</CardTitle>
+						<CardDescription className="break-all">
+							{deviceData._id}
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4 p-4">
 						{/* properties */}
@@ -152,7 +156,7 @@ export default function DeviceDashboard() {
 									alt={'name'}
 									width={250}
 									height={330}
-									className="h-auto w-auto object-cover transition-all hover:scale-105"
+									className="h-auto w-full object-cover transition-all hover:scale-105"
 								/>
 							</div>
 							<p className="pt-1 text-xs">
@@ -187,9 +191,9 @@ export default function DeviceDashboard() {
 				</Card>
 
 				{/* Right side - measurements */}
-				<Card className="col-span-3 dark:border-[#ffffff] dark:bg-black">
+				<Card className="min-w-0 lg:col-span-3 lg:overflow-y-auto dark:border-[#ffffff] dark:bg-black">
 					<CardContent>
-						<div className="mt-4 flex flex-wrap gap-3">
+						<div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
 							{deviceData.sensors.map((sensor: any) => (
 								<Card
 									key={sensor._id}

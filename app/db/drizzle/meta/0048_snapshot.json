@@ -1,5 +1,5 @@
 {
-  "id": "f745826f-5e8c-4bb5-bbab-7e9e77ffdbf2",
+  "id": "de4f7356-d843-4e2a-a221-b76bf85718af",
   "prevId": "3285f8be-bd73-4ead-b46a-8a783965c4d7",
   "version": "7",
   "dialect": "postgresql",
@@ -136,6 +136,24 @@
           "type": "double precision",
           "primaryKey": false,
           "notNull": true
+        },
+        "height_above_ground": {
+          "name": "height_above_ground",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terrain_elevation": {
+          "name": "terrain_elevation",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terrain_elevation_dataset": {
+          "name": "terrain_elevation_dataset",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "sensor_wiki_model": {
           "name": "sensor_wiki_model",
@@ -1689,8 +1707,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.sensor_wiki_alias": {
-      "name": "sensor_wiki_alias",
+    "public.elevation_consent": {
+      "name": "elevation_consent",
       "schema": "",
       "columns": {
         "id": {
@@ -1699,79 +1717,38 @@
           "primaryKey": true,
           "notNull": true
         },
-        "key": {
-          "name": "key",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "sensor_wiki_phenomenon": {
-          "name": "sensor_wiki_phenomenon",
+        "consent_version": {
+          "name": "consent_version",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "sensor_wiki_unit": {
-          "name": "sensor_wiki_unit",
-          "type": "text",
+        "accepted_at": {
+          "name": "accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "withdrawn_at": {
+          "name": "withdrawn_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "unit": {
-          "name": "unit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "title_aliases": {
-          "name": "title_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "unit_aliases": {
-          "name": "unit_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "sensor_type_aliases": {
-          "name": "sensor_type_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
         }
       },
       "indexes": {
-        "sensor_wiki_alias_key_unique": {
-          "name": "sensor_wiki_alias_key_unique",
+        "elevation_consent_user_idx": {
+          "name": "elevation_consent_user_idx",
           "columns": [
             {
-              "expression": "key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "sensor_wiki_alias_phenomenon_idx": {
-          "name": "sensor_wiki_alias_phenomenon_idx",
-          "columns": [
-            {
-              "expression": "sensor_wiki_phenomenon",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1783,7 +1760,21 @@
           "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "elevation_consent_user_id_user_id_fk": {
+          "name": "elevation_consent_user_id_user_id_fk",
+          "tableFrom": "elevation_consent",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
