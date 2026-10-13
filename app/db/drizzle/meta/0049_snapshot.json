@@ -1,5 +1,5 @@
 {
-  "id": "eb2e3e4d-13c8-4a8e-bcc2-47c686172b67",
+  "id": "c11b1935-3728-42c2-b92b-92dd289ce244",
   "prevId": "de4f7356-d843-4e2a-a221-b76bf85718af",
   "version": "7",
   "dialect": "postgresql",
@@ -1100,6 +1100,12 @@
           "type": "geometry(point)",
           "primaryKey": false,
           "notNull": true
+        },
+        "height_above_ground": {
+          "name": "height_above_ground",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -1122,11 +1128,12 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "location_location_unique": {
-          "name": "location_location_unique",
-          "nullsNotDistinct": false,
+        "location_geometry_height_above_ground_unique": {
+          "name": "location_geometry_height_above_ground_unique",
+          "nullsNotDistinct": true,
           "columns": [
-            "location"
+            "location",
+            "height_above_ground"
           ]
         }
       },
@@ -1703,107 +1710,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.sensor_wiki_alias": {
-      "name": "sensor_wiki_alias",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sensor_wiki_phenomenon": {
-          "name": "sensor_wiki_phenomenon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sensor_wiki_unit": {
-          "name": "sensor_wiki_unit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "unit": {
-          "name": "unit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "title_aliases": {
-          "name": "title_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "unit_aliases": {
-          "name": "unit_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "sensor_type_aliases": {
-          "name": "sensor_type_aliases",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        }
-      },
-      "indexes": {
-        "sensor_wiki_alias_key_unique": {
-          "name": "sensor_wiki_alias_key_unique",
-          "columns": [
-            {
-              "expression": "key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "sensor_wiki_alias_phenomenon_idx": {
-          "name": "sensor_wiki_alias_phenomenon_idx",
-          "columns": [
-            {
-              "expression": "sensor_wiki_phenomenon",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
