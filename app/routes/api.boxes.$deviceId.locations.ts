@@ -2,7 +2,10 @@ import { z } from 'zod'
 import { type Params } from 'react-router'
 import { type ZodOpenApiPathItemObject } from 'zod-openapi'
 import { type Route } from './+types/api.boxes.$deviceId.locations'
-import { getLocations } from '~/db/models/device.server'
+import {
+	getDeviceWithoutSensors,
+	getLocations,
+} from '~/db/models/device.server'
 import { parseDateParam, parseEnumParam } from '~/lib/params'
 import { StandardResponse } from '~/lib/responses'
 
@@ -20,7 +23,7 @@ import {
 	DevicePathParamsSchema,
 	IsoDateTimeSchema,
 } from '~/lib/openapi/schemas/common'
-import { CoordinatesSchema } from '~/lib/openapi/schemas/location'
+import { CoordinatesWithHeightSchema } from '~/lib/openapi/schemas/location'
 import {
 	DateRangeQuerySchema,
 	JsonGeoJsonFormatSchema,
@@ -32,7 +35,7 @@ const DeviceLocationsQueryParamsSchema = DateRangeQuerySchema.extend({
 
 const PointLocationSchema = z
 	.object({
-		coordinates: CoordinatesSchema,
+		coordinates: CoordinatesWithHeightSchema,
 		type: z.literal('Point'),
 		timestamp: IsoDateTimeSchema.meta({
 			description: 'Timestamp of the device location',
@@ -77,7 +80,7 @@ const GeoJsonLineStringResponseSchema = z
 		type: z.literal('Feature'),
 		geometry: z.object({
 			type: z.literal('LineString'),
-			coordinates: z.array(CoordinatesSchema),
+			coordinates: z.array(CoordinatesWithHeightSchema),
 		}),
 		properties: z.object({
 			timestamps: z.array(
@@ -160,16 +163,23 @@ export const loader = async ({
 		if (collected instanceof Response) return collected
 
 		const { deviceId, fromDate, toDate, format } = collected
+		const device = await getDeviceWithoutSensors({ id: deviceId })
 
-		const locations = await getLocations({ id: deviceId }, fromDate, toDate)
-
-		if (!locations) {
+		if (!device) {
 			return StandardResponse.notFound(apiMessages.deviceNotFound)
 		}
 
+		const locations = await getLocations({ id: deviceId }, fromDate, toDate)
+
 		const jsonLocations = locations.map((location) => {
 			return {
-				coordinates: [location.x, location.y],
+				coordinates: [
+					location.x,
+					location.y,
+					...(location.heightAboveGround === null
+						? []
+						: [location.heightAboveGround]),
+				],
 				type: 'Point',
 				timestamp:
 					location.time instanceof Date
@@ -237,15 +247,20 @@ function collectParameters(
 
 	const fromDate = parseDateParam(
 		url,
-		'from-date',
-		new Date(new Date().setDate(new Date().getDate() - 2)),
+		'fromDate',
+		new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+		['from-date'],
 	)
 
 	if (fromDate instanceof Response) return fromDate
 
-	const toDate = parseDateParam(url, 'to-date', new Date())
+	const toDate = parseDateParam(url, 'toDate', new Date(), ['to-date'])
 
 	if (toDate instanceof Response) return toDate
+
+	if (fromDate > toDate) {
+		return StandardResponse.badRequest('from-date must not be after to-date')
+	}
 
 	const format = parseEnumParam(url, 'format', ['json', 'geojson'], 'json')
 
