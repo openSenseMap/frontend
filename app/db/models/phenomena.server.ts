@@ -94,8 +94,8 @@ export const getPhenomena = async function findPhenomena(): Promise<
 
 		const fuzzyMatch = getFuzzySensorWikiPhenomenonMatch(
 			row,
-			PHENOMENON_FUZZY_MATCH_THRESHOLD,
 			sensorWikiAliasEntries,
+			PHENOMENON_FUZZY_MATCH_THRESHOLD,
 		)
 
 		if (fuzzyMatch || row.count < MIN_FALLBACK_PHENOMENON_COUNT) continue

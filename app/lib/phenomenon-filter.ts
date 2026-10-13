@@ -56,7 +56,7 @@ export function parsePhenomenonFilterValue(value: string):
 
 export function getSensorWikiPhenomenonLabel(
 	phenomenon: string,
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ) {
 	return (
 		entries.find((entry) => entry.sensorWikiPhenomenon === phenomenon)?.title ??
@@ -66,7 +66,7 @@ export function getSensorWikiPhenomenonLabel(
 
 export function getSensorWikiPhenomenonAliases(
 	phenomenon: string,
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ) {
 	return entries
 		.filter((entry) => entry.sensorWikiPhenomenon === phenomenon)
@@ -75,7 +75,7 @@ export function getSensorWikiPhenomenonAliases(
 
 export function getCanonicalSensorWikiPhenomenon(
 	input: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ) {
 	const existingCanonicalPhenomenon = entries.find(
 		(entry) => entry.sensorWikiPhenomenon === input.sensorWikiPhenomenon,
@@ -158,8 +158,8 @@ function aliasIncludesValue(aliases: string[] | undefined, value: string) {
 
 export function getFuzzySensorWikiPhenomenonMatch(
 	input: SensorWikiAliasInput,
+	entries: SensorWikiAliasEntry[],
 	threshold = PHENOMENON_FUZZY_MATCH_THRESHOLD,
-	entries: SensorWikiAliasEntry[] = [],
 ) {
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
@@ -210,7 +210,7 @@ export function getFuzzySensorWikiPhenomenonMatch(
 export function sensorMatchesPhenomenonFilter(
 	sensor: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
 	filterValue: string,
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ) {
 	const parsedFilter = parsePhenomenonFilterValue(filterValue)
 
@@ -226,8 +226,8 @@ export function sensorMatchesPhenomenonFilter(
 
 	const fuzzyPhenomenon = getFuzzySensorWikiPhenomenonMatch(
 		sensor,
-		PHENOMENON_FUZZY_MATCH_THRESHOLD,
 		entries,
+		PHENOMENON_FUZZY_MATCH_THRESHOLD,
 	)
 	if (fuzzyPhenomenon?.sensorWikiPhenomenon === parsedFilter.phenomenon) {
 		return true
@@ -242,7 +242,7 @@ export function sensorMatchesPhenomenonFilter(
 export function sensorMatchesAnyPhenomenonFilter(
 	sensor: SensorWikiAliasInput & { sensorWikiPhenomenon?: string | null },
 	filterValues: string[],
-	entries: SensorWikiAliasEntry[] = [],
+	entries: SensorWikiAliasEntry[],
 ) {
 	return filterValues.some((filterValue) =>
 		sensorMatchesPhenomenonFilter(sensor, filterValue, entries),
