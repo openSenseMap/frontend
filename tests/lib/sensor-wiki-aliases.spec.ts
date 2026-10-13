@@ -3,6 +3,7 @@ import {
 	getSensorWikiAliasSuggestions,
 	matchSensorWikiAlias,
 	normalizeSensorWikiAliasValue,
+	sensorWikiAliasEntries,
 } from '~/lib/device-schemas/sensor-wiki-aliases'
 
 describe('sensor wiki aliases', () => {
@@ -15,11 +16,14 @@ describe('sensor wiki aliases', () => {
 
 	it('returns a high-confidence match when title and unit match', () => {
 		expect(
-			matchSensorWikiAlias({
-				title: 'Temperatur',
-				unit: '°C',
-				sensorType: 'BME280',
-			}),
+			matchSensorWikiAlias(
+				{
+					title: 'Temperatur',
+					unit: '°C',
+					sensorType: 'BME280',
+				},
+				sensorWikiAliasEntries,
+			),
 		).toMatchObject({
 			sensorWikiPhenomenon: 'temperature',
 			sensorWikiUnit: 'Cel',
@@ -29,10 +33,13 @@ describe('sensor wiki aliases', () => {
 
 	it('returns a medium-confidence match when only the title matches', () => {
 		expect(
-			matchSensorWikiAlias({
-				title: 'Luftfeuchtigkeit',
-				unit: 'unknown',
-			}),
+			matchSensorWikiAlias(
+				{
+					title: 'Luftfeuchtigkeit',
+					unit: 'unknown',
+				},
+				sensorWikiAliasEntries,
+			),
 		).toMatchObject({
 			sensorWikiPhenomenon: 'relative_humidity',
 			confidence: 'medium',
@@ -40,11 +47,18 @@ describe('sensor wiki aliases', () => {
 	})
 
 	it('does not invent a match for unknown labels', () => {
-		expect(matchSensorWikiAlias({ title: 'asdasd', unit: 's' })).toBeUndefined()
+		expect(
+			matchSensorWikiAlias(
+				{ title: 'asdasd', unit: 's' },
+				sensorWikiAliasEntries,
+			),
+		).toBeUndefined()
 	})
 
 	it('returns autocomplete suggestions for partial aliases', () => {
-		expect(getSensorWikiAliasSuggestions({ title: 'temp' })).toContainEqual(
+		expect(
+			getSensorWikiAliasSuggestions({ title: 'temp' }, sensorWikiAliasEntries),
+		).toContainEqual(
 			expect.objectContaining({
 				title: 'Temperature',
 				sensorWikiPhenomenon: 'temperature',
@@ -54,6 +68,15 @@ describe('sensor wiki aliases', () => {
 	})
 
 	it('does not suggest entries for very short queries', () => {
-		expect(getSensorWikiAliasSuggestions({ title: 't' })).toEqual([])
+		expect(
+			getSensorWikiAliasSuggestions({ title: 't' }, sensorWikiAliasEntries),
+		).toEqual([])
+	})
+
+	it('does not activate bundled aliases for an empty runtime configuration', () => {
+		expect(matchSensorWikiAlias({ title: 'Temperatur', unit: '°C' }, [])).toBe(
+			undefined,
+		)
+		expect(getSensorWikiAliasSuggestions({ title: 'temp' }, [])).toEqual([])
 	})
 })
