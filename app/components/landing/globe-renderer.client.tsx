@@ -2,7 +2,7 @@
 
 import { type ComponentRef, useEffect, useMemo, useRef } from 'react'
 import Globe from 'react-globe.gl'
-import { type LandingGlobeDevice } from './globe.client'
+import { type LandingGlobeDevice } from './globe'
 
 interface InteractiveGlobeProps {
 	isActive: boolean
