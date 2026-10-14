@@ -129,7 +129,7 @@ describe('openSenseMap API Routes: /users', () => {
 				} as Route.ActionArgs)) as Response
 				const body = await response.json()
 
-				expect(response.status).toBe(400)
+				expect(response.status).toBe(403)
 				expect(response.headers.get('content-type')).toBe(
 					'application/json; charset=utf-8',
 				)

@@ -197,7 +197,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
-				'Invalid or missing JWT authorization.',
+				'Forbidden. The JWT is invalid or missing, or the supplied current password is incorrect.',
 			),
 
 			405: methodNotAllowedResponse(
