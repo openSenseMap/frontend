@@ -8,6 +8,7 @@ import {
 import { ElevationLookupConsentSchema } from '~/lib/openapi/schemas/consent'
 import { ApiDeviceModelZodEnum } from '~/lib/device-enums'
 import { getSensorTemplateValidationError } from '~/lib/model-definitions'
+import { parseFiniteNumber } from '~/lib/numbers'
 
 const CommaSeparatedStringArraySchema = z
 	.union([z.string(), z.array(z.string())])
@@ -50,7 +51,7 @@ const LegacyBooleanSchema = z
 	.transform((value) => value === true || value === 'true')
 
 const parseQueryNumber = (value: string): number =>
-	value.trim() === '' ? Number.NaN : Number(value.trim())
+	parseFiniteNumber(value) ?? Number.NaN
 
 export const CreateDeviceSchema = z
 	.object({

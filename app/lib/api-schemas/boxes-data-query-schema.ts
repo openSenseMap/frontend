@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DeviceExposureZodEnum } from "../device-enums";
+import { parseFiniteNumber } from "~/lib/numbers";
 import { StandardResponse } from "~/lib/responses";
 
 const LEGACY_BOX_ID_PARAMETER_NAMES = [
@@ -30,7 +31,7 @@ const BoxesDataColumnSchema = z.enum([...LEGACY_BOXES_DATA_COLUMNS, "boxid"]);
 export type BoxesDataColumn = z.infer<typeof BoxesDataColumnSchema>;
 
 const parseCoordinate = (value: string): number =>
-  value.trim() === "" ? Number.NaN : Number(value.trim());
+  parseFiniteNumber(value) ?? Number.NaN;
 
 const StringListSchema = z.union([z.string(), z.array(z.string())]).transform((value) => {
   const values = Array.isArray(value) ? value : [value];
