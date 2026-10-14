@@ -78,7 +78,7 @@ const PostSensorMeasurementSuccessResponseSchema = z.string().meta({
 	id: 'PostSensorMeasurementSuccessResponse',
 	description:
 		'Plain text success response returned after the measurement was saved.',
-	example: 'Measurement saved in device',
+	example: 'Measurement saved in box',
 })
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -247,7 +247,7 @@ export const action = async ({
 		timing?.mark('postSingleMeasurement')
 
 		timing?.finish({ status: 201 })
-		return new Response('Measurement saved in device', {
+		return new Response('Measurement saved in box', {
 			status: 201,
 			headers: {
 				'Content-Type': 'text/plain; charset=utf-8',
