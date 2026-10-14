@@ -219,13 +219,13 @@ export async function addLocationUpdates(
 				longitude: latestUpdate.location.lng,
 				latitude: latestUpdate.location.lat,
 				heightAboveGround: latestUpdate.location.height ?? null,
-					terrainElevation: sql`CASE
+				terrainElevation: sql`CASE
 						WHEN ${device.longitude} IS DISTINCT FROM ${latestUpdate.location.lng}
 							OR ${device.latitude} IS DISTINCT FROM ${latestUpdate.location.lat}
 						THEN NULL
 						ELSE ${device.terrainElevation}
 					END`,
-					terrainElevationDataset: sql`CASE
+				terrainElevationDataset: sql`CASE
 						WHEN ${device.longitude} IS DISTINCT FROM ${latestUpdate.location.lng}
 							OR ${device.latitude} IS DISTINCT FROM ${latestUpdate.location.lat}
 						THEN NULL
