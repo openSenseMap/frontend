@@ -133,7 +133,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			201: {
-				description: 'Device successfully prepared for transfer.',
+				description: 'Box successfully prepared for transfer.',
 				content: {
 					'application/json': {
 						schema: CreateDeviceTransferResponseSchema,
