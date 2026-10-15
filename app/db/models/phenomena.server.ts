@@ -66,10 +66,13 @@ export const getPhenomena = async function findPhenomena(): Promise<
 	>()
 
 	for (const row of rows) {
-		const canonicalPhenomenon = getCanonicalSensorWikiPhenomenon(
-			row,
-			sensorWikiAliasEntries,
-		)
+		const canonicalPhenomenon =
+			getCanonicalSensorWikiPhenomenon(row, sensorWikiAliasEntries) ??
+			getFuzzySensorWikiPhenomenonMatch(
+				row,
+				sensorWikiAliasEntries,
+				PHENOMENON_FUZZY_MATCH_THRESHOLD,
+			)?.sensorWikiPhenomenon
 
 		if (canonicalPhenomenon) {
 			const value = getSensorWikiPhenomenonFilterValue(canonicalPhenomenon)
@@ -92,13 +95,7 @@ export const getPhenomena = async function findPhenomena(): Promise<
 			continue
 		}
 
-		const fuzzyMatch = getFuzzySensorWikiPhenomenonMatch(
-			row,
-			sensorWikiAliasEntries,
-			PHENOMENON_FUZZY_MATCH_THRESHOLD,
-		)
-
-		if (fuzzyMatch || row.count < MIN_FALLBACK_PHENOMENON_COUNT) continue
+		if (row.count < MIN_FALLBACK_PHENOMENON_COUNT) continue
 
 		const value = getTitlePhenomenonFilterValue(row.title)
 		const existingFallback = fallbackOptionsByValue.get(value)
