@@ -1,4 +1,3 @@
-import bbox from '@turf/bbox'
 import { featureCollection, lineString, point } from '@turf/helpers'
 import { type FeatureCollection, type LineString, type Point } from 'geojson'
 import { CalendarClock } from 'lucide-react'
@@ -7,9 +6,23 @@ import { useTranslation } from 'react-i18next'
 import { Source, Layer, useMap, Popup } from 'react-map-gl/maplibre'
 import MapLegend from './mobile-overview-legend'
 import { type LocationPoint, type Trip } from '~/lib/mobile-box-helper'
-import { validLngLat } from '~/lib/location'
+import { getLngLatBounds, validLngLat } from '~/lib/location'
 
 const FIT_PADDING = 100
+// extra space on desktop for device-detail-box and legend
+const DEVICE_PANEL_FIT_PADDING = 500
+const LEGEND_FIT_PADDING = 320
+const DESKTOP_LAYOUT_MIN_WIDTH = 1024
+const TRIP_FIT_MAX_ZOOM = 16
+const TRIP_FIT_DURATION = 900
+
+function* getTripCoordinates(trips: Trip[]) {
+	for (const trip of trips) {
+		for (const { geometry } of trip.points) {
+			yield [geometry.x, geometry.y] as const
+		}
+	}
+}
 
 // Clustering configuration
 const CLUSTER_DISTANCE_METERS = 8 // Distance threshold for clustering
@@ -167,8 +180,17 @@ export default function MobileOverviewLayer({
 
 	const { osem: mapRef } = useMap()
 
-	// State to track the highlighted trip number
-	const [highlightedTrip, setHighlightedTrip] = useState<number | null>(null)
+	// Hover is temporary; selection persists until another legend click.
+	const [hoveredTrip, setHoveredTrip] = useState<number | null>(null)
+	const [selectedTripSelection, setSelectedTripSelection] = useState<{
+		trip: Trip
+		tripNumber: number
+	} | null>(null)
+	const selectedTrip =
+		selectedTripSelection &&
+		trips[selectedTripSelection.tripNumber - 1] === selectedTripSelection.trip
+			? selectedTripSelection.tripNumber
+			: null
 
 	// State to track the hovered cluster
 	const [hoveredCluster, setHoveredCluster] = useState<string | null>(null)
@@ -266,6 +288,7 @@ export default function MobileOverviewLayer({
 			),
 			color: colors[index],
 			isLatest: index === clusteredTrips.length - 1,
+			tripNumber: index + 1,
 		}))
 
 		return {
@@ -278,39 +301,50 @@ export default function MobileOverviewLayer({
 		}
 	}, [clusteredTrips, tripDateTimeFormatter])
 	const interactionIsCurrent = interactionSourceData === sourceData
-	const activeHighlightedTrip = interactionIsCurrent ? highlightedTrip : null
+	const activeHoveredTrip = interactionIsCurrent ? hoveredTrip : null
+	const activeHighlightedTrip = activeHoveredTrip ?? selectedTrip
 	const activeHoveredCluster = interactionIsCurrent ? hoveredCluster : null
 	const activePopupInfo = interactionIsCurrent ? popupInfo : null
-	const clearInteraction = useCallback(() => {
+	const clearHoverInteraction = useCallback(() => {
 		setInteractionSourceData(null)
-		setHighlightedTrip(null)
+		setHoveredTrip(null)
 		setHoveredCluster(null)
 		setPopupInfo(null)
 	}, [])
 
-	useEffect(() => {
-		if (!mapRef || !sourceData) return
+	const fitTrips = useCallback(
+		(tripsToFit: Trip[], animate: boolean) => {
+			if (!mapRef) return
 
-		const bounds = bbox(sourceData).slice(0, 4) as [
-			number,
-			number,
-			number,
-			number,
-		]
-		mapRef.fitBounds(bounds, {
-			padding: {
-				top: FIT_PADDING,
-				bottom: FIT_PADDING,
-				left: 500,
-				right: FIT_PADDING,
-			},
-		})
-	}, [mapRef, sourceData])
+			const bounds = getLngLatBounds(getTripCoordinates(tripsToFit))
+			if (!bounds) return
+
+			const useDesktopPadding =
+				mapRef.getCanvas().clientWidth >= DESKTOP_LAYOUT_MIN_WIDTH
+			mapRef.fitBounds(bounds, {
+				padding: {
+					top: FIT_PADDING,
+					bottom: FIT_PADDING,
+					left: useDesktopPadding ? DEVICE_PANEL_FIT_PADDING : FIT_PADDING,
+					right: useDesktopPadding ? LEGEND_FIT_PADDING : FIT_PADDING,
+				},
+				maxZoom: TRIP_FIT_MAX_ZOOM,
+				duration: animate ? TRIP_FIT_DURATION : 0,
+				essential: true,
+			})
+		},
+		[mapRef],
+	)
+
+	useEffect(() => {
+		if (!sourceData) return
+		fitTrips(trips, false)
+	}, [fitTrips, sourceData, trips])
 
 	const handleHover = useCallback(
 		(event: any) => {
 			if (!showTripColors) {
-				clearInteraction()
+				clearHoverInteraction()
 				return
 			}
 
@@ -325,7 +359,7 @@ export default function MobileOverviewLayer({
 					isCluster,
 					clusterId,
 				} = feature.properties
-				setHighlightedTrip(tripNumber)
+				setHoveredTrip(tripNumber)
 
 				// Set hovered cluster if it's a cluster
 				if (isCluster && clusterId) {
@@ -347,10 +381,10 @@ export default function MobileOverviewLayer({
 					isCluster,
 				})
 			} else {
-				clearInteraction()
+				clearHoverInteraction()
 			}
 		},
-		[clearInteraction, showTripColors, sourceData],
+		[clearHoverInteraction, showTripColors, sourceData],
 	)
 
 	useEffect(() => {
@@ -372,7 +406,7 @@ export default function MobileOverviewLayer({
 		const onMouseLeave = () => {
 			if (!showTripColors) return
 			mapRef.getCanvas().style.cursor = ''
-			clearInteraction()
+			clearHoverInteraction()
 		}
 
 		interactiveLayers.forEach((layerId) => {
@@ -387,7 +421,25 @@ export default function MobileOverviewLayer({
 			})
 			mapRef.getCanvas().style.cursor = ''
 		}
-	}, [clearInteraction, mapRef, handleHover, showTripColors])
+	}, [clearHoverInteraction, mapRef, handleHover, showTripColors])
+
+	const handleLegendItemSelect = useCallback(
+		(tripNumber: number) => {
+			const trip = trips[tripNumber - 1]
+			if (!trip) return
+
+			clearHoverInteraction()
+			if (selectedTrip === tripNumber) {
+				setSelectedTripSelection(null)
+				fitTrips(trips, true)
+				return
+			}
+
+			setSelectedTripSelection({ trip, tripNumber })
+			fitTrips([trip], true)
+		},
+		[clearHoverInteraction, fitTrips, selectedTrip, trips],
+	)
 
 	if (!sourceData) return null
 
@@ -429,57 +481,86 @@ export default function MobileOverviewLayer({
 								: 0.7,
 					}}
 				/>
+				<Layer
+					id="box-overview-selected-route"
+					type="line"
+					source="box-overview-source"
+					filter={[
+						'all',
+						['==', '$type', 'LineString'],
+						['==', ['get', 'tripNumber'], selectedTrip ?? -1],
+					]}
+					layout={{
+						'line-cap': 'round',
+						'line-join': 'round',
+					}}
+					paint={{
+						'line-color': ['get', 'color'],
+						'line-width': 6,
+						'line-opacity': 1,
+					}}
+				/>
 				{!muted && (
-					<Layer
-						id="box-overview-layer"
-						type="circle"
-						source="box-overview-source"
-						filter={['==', '$type', 'Point']}
-						paint={{
-							'circle-color': showTripColors ? ['get', 'color'] : '#888',
-							'circle-radius': [
-								'case',
-								['get', 'isCluster'],
-								[
-									'interpolate',
-									['linear'],
-									['get', 'pointCount'],
-									1,
-									5, // Single point: radius 5
-									10,
-									8, // 10 points: radius 8
-									50,
-									12, // 50 points: radius 12
-									100,
-									16, // 100+ points: radius 16
+					<>
+						<Layer
+							id="box-overview-layer"
+							type="circle"
+							source="box-overview-source"
+							filter={['==', '$type', 'Point']}
+							paint={{
+								'circle-color': showTripColors ? ['get', 'color'] : '#888',
+								'circle-radius': [
+									'case',
+									['==', ['get', 'tripNumber'], selectedTrip ?? -1],
+									['get', 'isCluster'],
+									[
+										'interpolate',
+										['linear'],
+										['get', 'pointCount'],
+										1,
+										5, // Single point: radius 5
+										10,
+										8, // 10 points: radius 8
+										50,
+										12, // 50 points: radius 12
+										100,
+										16, // 100+ points: radius 16
+									],
+									3, // Non-cluster points: radius 3
 								],
-								3, // Non-cluster points: radius 3
-							],
-							'circle-opacity': showOriginalColors
-								? [
-										'case',
-										['==', ['get', 'tripNumber'], activeHighlightedTrip],
-										1,
-										0.5,
-									]
-								: 1,
-							'circle-stroke-width': [
-								'case',
-								['get', 'isCluster'],
-								2, // Clusters have stroke
-								0, // Individual points don't
-							],
-							'circle-stroke-color': '#222',
-							'circle-stroke-opacity': showOriginalColors
-								? [
-										'case',
-										['==', ['get', 'tripNumber'], activeHighlightedTrip],
-										1,
-										0.3,
-									]
-								: 1,
-						}}
-					/>
+								'circle-opacity': showOriginalColors
+									? [
+											'case',
+											['==', ['get', 'tripNumber'], activeHighlightedTrip],
+											1,
+											0.5,
+										]
+									: 1,
+								'circle-stroke-width': [
+									'case',
+									['==', ['get', 'tripNumber'], selectedTrip ?? -1],
+									3,
+									['get', 'isCluster'],
+									2, // Clusters have stroke
+									0, // Individual points don't
+								],
+								'circle-stroke-color': [
+									'case',
+									['==', ['get', 'tripNumber'], selectedTrip ?? -1],
+									'#fff',
+									'#222',
+								],
+								'circle-stroke-opacity': showOriginalColors
+									? [
+											'case',
+											['==', ['get', 'tripNumber'], activeHighlightedTrip],
+											1,
+											0.3,
+										]
+									: 1,
+							}}
+						/>
+					</>
 				)}
 
 				{/* Text layer for cluster point counts */}
@@ -583,23 +664,24 @@ export default function MobileOverviewLayer({
 					items={legendItems}
 					position="top-right"
 					onColorByTripChange={(enabled) => {
-						clearInteraction()
+						clearHoverInteraction()
+						setSelectedTripSelection(null)
 						setShowOriginalColors(enabled)
 					}}
 					showOriginalColors={showOriginalColors}
-					onLegendItemHover={(color) => {
-						if (!color) {
-							clearInteraction()
+					selectedTripNumber={selectedTrip}
+					onLegendItemHover={(tripNumber) => {
+						if (tripNumber === null) {
+							clearHoverInteraction()
 							return
 						}
 
 						setInteractionSourceData(sourceData)
 						setHoveredCluster(null)
 						setPopupInfo(null)
-						setHighlightedTrip(
-							legendItems.findIndex((item) => item.color === color) + 1,
-						)
+						setHoveredTrip(tripNumber)
 					}}
+					onLegendItemSelect={handleLegendItemSelect}
 				/>
 			)}
 		</>
