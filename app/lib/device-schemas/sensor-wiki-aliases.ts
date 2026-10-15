@@ -347,6 +347,13 @@ export function normalizeSensorWikiAliasValue(value?: string | null) {
 		.trim()
 }
 
+export function parseSensorWikiAliasList(value: string) {
+	return value
+		.split(/\r?\n/)
+		.map((alias) => alias.trim())
+		.filter(Boolean)
+}
+
 export function matchSensorWikiAlias(
 	input: SensorWikiAliasInput,
 	entries: SensorWikiAliasEntry[],
@@ -354,40 +361,81 @@ export function matchSensorWikiAlias(
 	const normalizedTitle = normalizeSensorWikiAliasValue(input.title)
 	const normalizedUnit = normalizeSensorWikiAliasValue(input.unit)
 	const normalizedSensorType = normalizeSensorWikiAliasValue(input.sensorType)
+	const candidates: Array<{
+		entry: SensorWikiAliasEntry
+		unitMatched: boolean
+		sensorTypeMatched: boolean
+		exactPrimaryTitleMatched: boolean
+		score: number
+	}> = []
 
 	for (const entry of entries) {
-		const titleMatched = [entry.title, ...entry.titleAliases].some(
-			(alias) => normalizeSensorWikiAliasValue(alias) === normalizedTitle,
-		)
-		const unitMatched =
-			!!normalizedUnit &&
-			entry.unitAliases?.some(
-				(alias) => normalizeSensorWikiAliasValue(alias) === normalizedUnit,
-			)
-		const sensorTypeMatched =
-			!!normalizedSensorType &&
-			entry.sensorTypeAliases?.some(
-				(alias) =>
-					normalizeSensorWikiAliasValue(alias) === normalizedSensorType,
+		const exactPrimaryTitleMatched =
+			normalizeSensorWikiAliasValue(entry.title) === normalizedTitle
+		const titleMatched =
+			exactPrimaryTitleMatched ||
+			entry.titleAliases.some(
+				(alias) => normalizeSensorWikiAliasValue(alias) === normalizedTitle,
 			)
 
 		if (!titleMatched) continue
 
-		const reasons = ['title-alias']
-		if (unitMatched) reasons.push('unit-alias')
-		if (sensorTypeMatched) reasons.push('sensor-type-alias')
+		const unitMatched = Boolean(
+			normalizedUnit &&
+			entry.unitAliases?.some(
+				(alias) => normalizeSensorWikiAliasValue(alias) === normalizedUnit,
+			),
+		)
+		const sensorTypeMatched = Boolean(
+			normalizedSensorType &&
+			entry.sensorTypeAliases?.some(
+				(alias) =>
+					normalizeSensorWikiAliasValue(alias) === normalizedSensorType,
+			),
+		)
 
-		return {
-			sensorWikiPhenomenon: entry.sensorWikiPhenomenon,
-			sensorWikiUnit: unitMatched ? entry.sensorWikiUnit : undefined,
-			confidence: unitMatched || sensorTypeMatched ? 'high' : 'medium',
-			source:
-				entries === sensorWikiAliasEntries ? 'curated-alias' : 'database-alias',
-			reasons,
-		}
+		candidates.push({
+			entry,
+			unitMatched,
+			sensorTypeMatched,
+			exactPrimaryTitleMatched,
+			// These weights make the ranking lexicographic: unit, sensor type,
+			// then an exact match against the entry's primary display title.
+			score:
+				(unitMatched ? 4 : 0) +
+				(sensorTypeMatched ? 2 : 0) +
+				(exactPrimaryTitleMatched ? 1 : 0),
+		})
 	}
 
-	return undefined
+	if (candidates.length === 0) return undefined
+
+	const bestScore = Math.max(...candidates.map((candidate) => candidate.score))
+	const bestCandidates = candidates.filter(
+		(candidate) => candidate.score === bestScore,
+	)
+	const bestTargets = new Set(
+		bestCandidates.map(({ entry }) => createSensorWikiAliasKey(entry)),
+	)
+
+	if (bestTargets.size > 1) return undefined
+
+	const [bestMatch] = bestCandidates
+	const reasons = ['title-alias']
+	if (bestMatch.unitMatched) reasons.push('unit-alias')
+	if (bestMatch.sensorTypeMatched) reasons.push('sensor-type-alias')
+
+	return {
+		sensorWikiPhenomenon: bestMatch.entry.sensorWikiPhenomenon,
+		sensorWikiUnit: bestMatch.unitMatched
+			? bestMatch.entry.sensorWikiUnit
+			: undefined,
+		confidence:
+			bestMatch.unitMatched || bestMatch.sensorTypeMatched ? 'high' : 'medium',
+		source:
+			entries === sensorWikiAliasEntries ? 'curated-alias' : 'database-alias',
+		reasons,
+	}
 }
 
 export function getSensorWikiAliasSuggestions(
