@@ -12,7 +12,7 @@ import {
 	type ChartOptions,
 } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-import { Download, RefreshCcw, X } from 'lucide-react'
+import { ChartLine, Download, RefreshCcw, X } from 'lucide-react'
 import {
 	useMemo,
 	useRef,
@@ -140,6 +140,7 @@ export default function Graph({
 	const navigate = useNavigate()
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
+	const [connectDots, setConnectDots] = useState(false)
 	const [currentZoom, setCurrentZoom] = useState<{
 		xMin: number
 		xMax: number
@@ -203,8 +204,17 @@ export default function Graph({
 		}
 
 		previousChartInputRef.current = { sensors, isAggregated }
-		setChartData(createMeasurementChartData(sensors, isAggregated))
-	}, [sensors, isAggregated])
+
+		const newChartData = createMeasurementChartData(sensors, isAggregated)
+
+		setChartData({
+			...newChartData,
+			datasets: newChartData.datasets.map((dataset) => ({
+				...dataset,
+				showLine: connectDots,
+			})),
+		})
+	}, [sensors, isAggregated, connectDots])
 
 	const options: ChartOptions<'line'> = useMemo(() => {
 		return {
@@ -403,6 +413,20 @@ export default function Graph({
 		}))
 	}
 
+	function handleConnectDotsClick() {
+		const nextConnectDots = !connectDots
+
+		setConnectDots(nextConnectDots)
+
+		setChartData((prevData) => ({
+			...prevData,
+			datasets: prevData.datasets.map((dataset) => ({
+				...dataset,
+				showLine: nextConnectDots,
+			})),
+		}))
+	}
+
 	function handlePngDownloadClick() {
 		if (chartRef.current) {
 			const imageString = chartRef.current.canvas.toDataURL('image/png', 1.0)
@@ -509,6 +533,26 @@ export default function Graph({
 							<AggregationFilter />
 						</div>
 						<div className="flex h-full items-start justify-end gap-4 py-2">
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<button
+										type="button"
+										onClick={handleConnectDotsClick}
+										aria-pressed={connectDots}
+										className={`cursor-pointer rounded p-1 ${
+											connectDots ? 'bg-zinc-200 dark:bg-zinc-700' : ''
+										}`}
+									>
+										<ChartLine />
+									</button>
+								</TooltipTrigger>
+
+								<TooltipContent>
+									<p>
+										{connectDots ? t('disconnect_points') : t('connect_points')}
+									</p>
+								</TooltipContent>
+							</Tooltip>
 							{currentZoom !== null &&
 								currentZoom.xMax !== 0 &&
 								currentZoom.xMin !== 0 && (
@@ -524,6 +568,7 @@ export default function Graph({
 										</TooltipContent>
 									</Tooltip>
 								)}
+
 							<DropdownMenu>
 								<DropdownMenuTrigger>
 									<Download />

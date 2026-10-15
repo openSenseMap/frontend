@@ -14,13 +14,18 @@ import {
 import invariant from 'tiny-invariant'
 import { type Route } from './+types/root'
 import ErrorMessage from './components/error-message'
+import { TosGraceDialog } from './components/tos-grace-dialog'
 import { Toaster } from './components/ui/toaster'
+import { getTosRequirementForUser } from './db/models/tos.server'
 import { updateUserPreferencesById } from './db/models/user.server'
 import { getEnv } from './lib/env.server'
 import { getLocale, i18nCookie, i18nextMiddleware } from './middleware/i18next'
 import { tosUiMiddleware } from './middleware/tos-ui.server'
 import { prometheusMetricsMiddleware } from './middleware/metrics.server'
-import { getUser } from './services/session-service.server'
+import {
+	getDismissedGraceTosVersionId,
+	getUser,
+} from './services/session-service.server'
 import { getServerTheme, ThemePreferenceSchema } from './lib/theme'
 import {
 	getThemePreference,
@@ -82,6 +87,22 @@ export const links = () => {
 export async function loader({ context, request }: Route.LoaderArgs) {
 	const locale = getLocale(context)
 	const user = await getUser(request)
+	const dismissedGraceTosVersionId = user
+		? await getDismissedGraceTosVersionId(request)
+		: undefined
+	const tosRequirement = user
+		? await getTosRequirementForUser(user.id)
+		: undefined
+	const graceTos =
+		tosRequirement?.inGrace &&
+		!tosRequirement.accepted &&
+		tosRequirement.tos &&
+		dismissedGraceTosVersionId !== tosRequirement.tos.id
+			? {
+					id: tosRequirement.tos.id,
+					acceptBy: tosRequirement.acceptBy?.toISOString() ?? '',
+				}
+			: null
 
 	const cookieThemePreference = await getThemePreference(request)
 
@@ -109,6 +130,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	return data(
 		{
 			user,
+			graceTos,
 			locale,
 			themePreference,
 			theme,
@@ -221,7 +243,7 @@ const meta = () => (
 )
 
 export default function App({
-	loaderData: { locale, ENV, themePreference, theme },
+	loaderData: { locale, ENV, themePreference, theme, graceTos },
 }: Route.ComponentProps) {
 	const { i18n } = useTranslation()
 	useEffect(() => {
@@ -247,6 +269,7 @@ export default function App({
 				<TooltipProvider>
 					<Outlet />
 				</TooltipProvider>
+				{graceTos && <TosGraceDialog key={graceTos.id} tos={graceTos} />}
 				<Toaster />
 
 				<ScrollRestoration />
