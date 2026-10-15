@@ -32,9 +32,11 @@ import { getSensors } from '~/db/models/sensor.server'
 import { type Device } from '~/db/schema'
 import { getCSV, getJSON, getTXT } from '~/lib/file-exports'
 import {
+	getLngLatBounds,
 	getValidMapViewport,
 	MAP_ZOOM_LIMITS,
 	validLngLat,
+	type LngLatBounds,
 	type MapViewport,
 } from '~/lib/location'
 import { getLocale } from '~/middleware/i18next'
@@ -83,7 +85,7 @@ type MyAreaTarget =
 	  }
 	| {
 			type: 'bounds'
-			bounds: [[number, number], [number, number]]
+			bounds: LngLatBounds
 	  }
 
 type OwnedDeviceLocation = {
@@ -225,18 +227,14 @@ function getOwnedDevicesAreaTarget(
 		}
 	}
 
-	const [firstDevice, ...remainingDevices] = validDevices
-	let west = firstDevice.longitude
-	let east = firstDevice.longitude
-	let south = firstDevice.latitude
-	let north = firstDevice.latitude
+	const bounds = getLngLatBounds(
+		validDevices.map(
+			({ longitude, latitude }) => [longitude, latitude] as const,
+		),
+	)
+	if (!bounds) return null
 
-	for (const device of remainingDevices) {
-		west = Math.min(west, device.longitude)
-		east = Math.max(east, device.longitude)
-		south = Math.min(south, device.latitude)
-		north = Math.max(north, device.latitude)
-	}
+	const [[west, south], [east, north]] = bounds
 
 	const latitudeSpan = Math.abs(north - south)
 	const longitudeSpan = Math.abs(east - west)
@@ -250,10 +248,7 @@ function getOwnedDevicesAreaTarget(
 
 	return {
 		type: 'bounds',
-		bounds: [
-			[west, south],
-			[east, north],
-		],
+		bounds,
 	}
 }
 
