@@ -12,7 +12,10 @@ import {
 	seedMissingSensorWikiAliasesFromBundledEntries,
 	updateSensorWikiAlias,
 } from '~/db/models/sensor-wiki-alias.server'
-import { createSensorWikiAliasKey } from '~/lib/device-schemas/sensor-wiki-aliases'
+import {
+	createSensorWikiAliasKey,
+	parseSensorWikiAliasList,
+} from '~/lib/device-schemas/sensor-wiki-aliases'
 
 type ActionData = {
 	error?: boolean
@@ -40,7 +43,7 @@ export async function action({
 				await seedMissingSensorWikiAliasesFromBundledEntries()
 			return {
 				error: false,
-				message: `Seeded ${insertedCount} missing aliases from the bundled table.`,
+				message: `Restored ${insertedCount} missing aliases from the bundled defaults.`,
 			}
 		}
 
@@ -118,13 +121,14 @@ export default function AdminSensorWikiAliasesRoute({
 					<div>
 						<h2 className="text-2xl font-semibold">Sensor-Wiki aliases</h2>
 						<p className="text-muted-foreground mt-1 text-sm">
-							Runtime matching uses this database table directly. Bundled
-							aliases are only imported through the seed action.
+							The database migration seeds the bundled defaults. Runtime
+							matching uses this table directly, and the restore action adds
+							back any missing defaults.
 						</p>
 					</div>
 					<Form method="post">
 						<Button type="submit" name="_action" value="seed">
-							Seed missing bundled aliases
+							Restore missing bundled aliases
 						</Button>
 					</Form>
 				</div>
@@ -157,8 +161,8 @@ export default function AdminSensorWikiAliasesRoute({
 				{aliases.length === 0 ? (
 					<p className="text-muted-foreground rounded-md border p-4 text-sm">
 						No aliases are configured, so alias suggestions and inferred
-						matching are disabled. Create entries manually or use the seed
-						action to import the bundled defaults.
+						matching are disabled. The migration normally seeds the bundled
+						defaults; create entries manually or use the restore action.
 					</p>
 				) : (
 					<div className="space-y-4">
@@ -331,12 +335,18 @@ function ArrayTextarea({
 	label: string
 	values: string[]
 }) {
+	const descriptionId = `${id}-description`
+
 	return (
 		<div>
 			<Label htmlFor={id}>{label}</Label>
+			<p id={descriptionId} className="text-muted-foreground mb-1 text-xs">
+				One alias per line. Commas are preserved.
+			</p>
 			<Textarea
 				id={id}
 				name={name}
+				aria-describedby={descriptionId}
 				defaultValue={values.join('\n')}
 				className="font-mono text-xs"
 				rows={6}
@@ -394,18 +404,15 @@ function parseAliasFormData(formData: FormData):
 			sensorWikiUnit,
 			title,
 			unit,
-			titleAliases: parseList(formData, 'titleAliases'),
-			unitAliases: parseList(formData, 'unitAliases'),
-			sensorTypeAliases: parseList(formData, 'sensorTypeAliases'),
+			titleAliases: parseSensorWikiAliasList(
+				getString(formData, 'titleAliases'),
+			),
+			unitAliases: parseSensorWikiAliasList(getString(formData, 'unitAliases')),
+			sensorTypeAliases: parseSensorWikiAliasList(
+				getString(formData, 'sensorTypeAliases'),
+			),
 		},
 	}
-}
-
-function parseList(formData: FormData, name: string) {
-	return getString(formData, name)
-		.split(/\r?\n|,/)
-		.map((value) => value.trim())
-		.filter(Boolean)
 }
 
 function emptyToNull(value: string) {
