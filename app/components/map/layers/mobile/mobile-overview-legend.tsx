@@ -10,11 +10,13 @@ import {
 	TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { MOBILE_TRIP_LIMIT } from '~/lib/mobile-box-helper'
+import { cn } from '~/lib/utils'
 
 type LegendItem = {
 	label: string
 	color: string
 	isLatest: boolean
+	tripNumber: number
 }
 
 type MapLegendProps = {
@@ -22,7 +24,9 @@ type MapLegendProps = {
 	position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 	onColorByTripChange: (enabled: boolean) => void
 	showOriginalColors: boolean
-	onLegendItemHover: (color: string | null) => void
+	selectedTripNumber: number | null
+	onLegendItemHover: (tripNumber: number | null) => void
+	onLegendItemSelect: (tripNumber: number) => void
 }
 
 export default function MapLegend({
@@ -30,7 +34,9 @@ export default function MapLegend({
 	position = 'top-right',
 	onColorByTripChange,
 	showOriginalColors,
+	selectedTripNumber,
 	onLegendItemHover,
+	onLegendItemSelect,
 }: MapLegendProps) {
 	const { t } = useTranslation('mobile-map')
 	const positionClasses = {
@@ -76,15 +82,21 @@ export default function MapLegend({
 			</div>
 			{showOriginalColors && (
 				<ul className="mt-2 space-y-1" aria-label={t('visibleTrips')}>
-					{items.map((item, index) => (
-						<li key={`${item.label}-${index}`}>
+					{items.map((item) => (
+						<li key={item.tripNumber}>
 							<button
 								type="button"
-								className="hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-sm p-1 text-left focus-visible:ring-2 focus-visible:outline-none"
-								onMouseEnter={() => onLegendItemHover(item.color)}
+								className={cn(
+									'hover:bg-muted focus-visible:ring-ring flex w-full items-center gap-2 rounded-sm p-1 text-left focus-visible:ring-2 focus-visible:outline-none',
+									selectedTripNumber === item.tripNumber &&
+										'bg-muted ring-primary/40 ring-1',
+								)}
+								onClick={() => onLegendItemSelect(item.tripNumber)}
+								onMouseEnter={() => onLegendItemHover(item.tripNumber)}
 								onMouseLeave={() => onLegendItemHover(null)}
-								onFocus={() => onLegendItemHover(item.color)}
+								onFocus={() => onLegendItemHover(item.tripNumber)}
 								onBlur={() => onLegendItemHover(null)}
+								aria-pressed={selectedTripNumber === item.tripNumber}
 								aria-label={
 									item.isLatest
 										? t('latestTripAriaLabel', { label: item.label })
