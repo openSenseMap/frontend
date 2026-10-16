@@ -181,6 +181,17 @@ export function getDeviceForMeasurementWrite({ id }: Pick<Device, 'id'>) {
 	})
 }
 
+export function getDeviceRateLimitIdentity({ id }: Pick<Device, 'id'>) {
+	return drizzleClient.query.device.findFirst({
+		where: (device, { eq }) => eq(device.id, id),
+		columns: {
+			id: true,
+			useAuth: true,
+			apiKey: true,
+		},
+	})
+}
+
 export async function getDeviceForSingleMeasurementWrite({
 	id,
 	sensorId,
