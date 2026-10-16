@@ -66,7 +66,10 @@ async function handleRequest(
 				},
 				onError: (error: unknown) => {
 					didError = true
-					if (shellRendered) console.error(error)
+					if (shellRendered) {
+						console.error(error)
+						Sentry.captureException(error)
+					}
 				},
 			},
 		)
