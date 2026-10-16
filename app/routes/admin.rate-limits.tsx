@@ -9,6 +9,10 @@ import {
 	type RateLimitGrantKind,
 	type RateLimitTier,
 } from '~/db/schema/rate-limit-grant'
+import {
+	parseRateLimitExpiry,
+	toUtcDateTimeLocalValue,
+} from '~/lib/rate-limit-expiry'
 
 const GRANT_KINDS = ['user_email', 'email_domain', 'credential_hash'] as const
 const RATE_LIMIT_TIERS = ['standard_plus', 'trusted', 'high_volume'] as const
@@ -140,7 +144,7 @@ export default function AdminRateLimitsRoute({
 								<th className="border-r-2 border-black p-2 text-left">Value</th>
 								<th className="border-r-2 border-black p-2 text-left">Tier</th>
 								<th className="border-r-2 border-black p-2 text-left">
-									Expires
+									Expires (UTC)
 								</th>
 								<th className="border-r-2 border-black p-2 text-left">
 									Enabled
@@ -215,7 +219,7 @@ export default function AdminRateLimitsRoute({
 											form={`grant-${grant.id}`}
 											type="datetime-local"
 											name="expiresAt"
-											defaultValue={toDateTimeLocalValue(grant.expiresAt)}
+											defaultValue={toUtcDateTimeLocalValue(grant.expiresAt)}
 											className="rounded border border-gray-300 px-2 py-1"
 										/>
 										<RowFieldError actionData={actionData} grantId={grant.id}>
@@ -312,7 +316,7 @@ function GrantFields({ actionData }: { actionData?: ActionData }) {
 
 			<div className="md:col-span-2">
 				<label htmlFor="expiresAt" className="block text-sm font-medium">
-					Expires at
+					Expires at (UTC)
 				</label>
 				<input
 					id="expiresAt"
@@ -373,7 +377,7 @@ function parseGrantForm(formData: FormData):
 	const tier = parseTier(formData.get('tier'))
 	const rawValue = getString(formData, 'value')
 	const note = getString(formData, 'note').trim() || null
-	const expiresAtResult = parseExpiresAt(getString(formData, 'expiresAt'))
+	const expiresAtResult = parseRateLimitExpiry(getString(formData, 'expiresAt'))
 	const fieldErrors: ActionData['fieldErrors'] = {}
 
 	if (!kind) fieldErrors.kind = 'Choose a valid grant kind.'
@@ -442,27 +446,6 @@ function validateValue(kind: RateLimitGrantKind, value: string) {
 	}
 
 	return null
-}
-
-function parseExpiresAt(
-	value: string,
-): { ok: true; value: Date | null } | { ok: false; error: string } {
-	if (!value.trim()) return { ok: true, value: null }
-
-	const date = new Date(value)
-	if (Number.isNaN(date.getTime())) {
-		return { ok: false, error: 'Enter a valid expiry date.' }
-	}
-
-	return { ok: true, value: date }
-}
-
-function toDateTimeLocalValue(value: Date | string | null) {
-	if (!value) return ''
-	const date = new Date(value)
-	if (Number.isNaN(date.getTime())) return ''
-	const offsetMs = date.getTimezoneOffset() * 60_000
-	return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
 }
 
 function getString(formData: FormData, key: string) {
