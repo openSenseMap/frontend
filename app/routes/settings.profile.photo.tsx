@@ -32,6 +32,7 @@ import { getInitials } from '~/lib/strings'
 import { requireUserId } from '~/services/session-service.server'
 
 const MAX_SIZE = 1024 * 1024 * 3 // 3MB
+const IMAGE_FORMAT_ERROR = 'Please upload a JPEG, PNG, WebP, or GIF image.'
 
 /*
 The preprocess call is needed because a current bug in @remix-run/web-fetch
@@ -52,7 +53,7 @@ const PhotoFormSchema = z.object({
 			}, 'Image size must be less than 3MB')
 			.refine((file) => {
 				return isSanitizableImageType(file.type)
-			}, 'Please upload a JPEG, PNG, WebP, or GIF image.'),
+			}, IMAGE_FORMAT_ERROR),
 	),
 })
 
@@ -81,7 +82,7 @@ export async function action({ request }: Route.ActionArgs) {
 		return data(
 			{
 				status: 'error',
-				submission,
+				submission: submission.reply(),
 			} as const,
 			{ status: 400 },
 		)
@@ -89,7 +90,20 @@ export async function action({ request }: Route.ActionArgs) {
 
 	const { photoFile } = submission.payload as { photoFile: File }
 	const { sanitizeImageFile } = await import('~/lib/image-sanitizer.server')
-	const sanitizedPhoto = await sanitizeImageFile(photoFile)
+	let sanitizedPhoto
+	try {
+		sanitizedPhoto = await sanitizeImageFile(photoFile)
+	} catch {
+		return data(
+			{
+				status: 'error',
+				submission: submission.reply({
+					fieldErrors: { photoFile: [IMAGE_FORMAT_ERROR] },
+				}),
+			} as const,
+			{ status: 400 },
+		)
+	}
 
 	// Query user profile
 	const previousProfileWithImage = await drizzleClient.query.profile.findFirst({
@@ -129,7 +143,7 @@ export default function PhotoChooserModal() {
 	const [form, { photoFile }] = useForm({
 		id: 'profile-photo',
 		constraint: getZodConstraint(PhotoFormSchema),
-		lastResult: actionData?.submission.payload,
+		lastResult: actionData?.submission,
 		onValidate({ formData }) {
 			return parseWithZod(formData, { schema: PhotoFormSchema })
 		},
