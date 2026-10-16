@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import jsonwebtoken, { type Algorithm } from 'jsonwebtoken'
+import { getDeviceRateLimitIdentity } from '~/db/models/device.server'
+import { isValidServiceKey } from '~/db/models/integration.server'
 import {
 	getActiveRateLimitGrants,
 	type ActiveRateLimitGrant,
@@ -11,8 +12,7 @@ import {
 	type RateLimitConfig,
 	type RouteInfo,
 } from '~/lib/api-routes'
-
-const { verify } = jsonwebtoken
+import { getUserFromJwt } from '~/lib/jwt'
 
 type HttpMethod = RouteInfo['method']
 
@@ -35,6 +35,11 @@ type ResolvedRateLimitTier = {
 	name: RateLimitTierName
 	multiplier: number
 }
+
+type RequesterIdentity =
+	| { key: string; kind: 'anonymous' | 'device' | 'service' }
+	| { key: string; kind: 'credential'; grant: ActiveRateLimitGrant }
+	| { key: string; kind: 'user'; email: string }
 
 const DEFAULT_WINDOW_MS = 60_000
 const GRANT_CACHE_TTL_MS = 60_000
@@ -112,67 +117,74 @@ async function getCachedRateLimitGrants(now: number) {
 	return cachedGrants
 }
 
-function getClientAddress(request: Request) {
-	const forwardedFor = request.headers.get('x-forwarded-for')
-	if (forwardedFor) return forwardedFor.split(',')[0]?.trim()
+function hashCredential(credential: string) {
+	return createHash('sha256').update(credential).digest('hex')
+}
 
+function getCredentialCandidates(request: Request) {
+	const credentials = [
+		request.headers.get('authorization'),
+		request.headers.get('x-osem-device-api-key'),
+		request.headers.get('x-service-key'),
+	].filter((credential): credential is string => Boolean(credential))
+
+	return [...new Set(credentials)].map((raw) => ({
+		raw,
+		hash: hashCredential(raw),
+	}))
+}
+
+const DEVICE_CREDENTIAL_ROUTE_PATHS = new Set([
+	'boxes/:boxId/data',
+	'boxes/:boxId/:sensorId',
+])
+
+function isDeviceCredentialRoute(route: (typeof compiledApiRoutes)[number]) {
 	return (
-		request.headers.get('cf-connecting-ip') ??
-		request.headers.get('fly-client-ip') ??
-		request.headers.get('x-real-ip') ??
-		'anonymous'
+		route.route.method === 'POST' &&
+		DEVICE_CREDENTIAL_ROUTE_PATHS.has(route.route.path)
 	)
 }
 
-function getRequesterCredential(request: Request) {
-	const credential =
-		request.headers.get('authorization') ??
-		request.headers.get('x-osem-device-api-key') ??
-		request.headers.get('x-service-key')
+function getRouteParameter(
+	routePath: string,
+	pathname: string,
+	parameter: string,
+) {
+	const routeSegments = ['api', ...routePath.split('/')]
+	const pathSegments = pathname.split('/').filter(Boolean)
+	if (routeSegments.length !== pathSegments.length) return null
 
-	if (!credential) return null
+	const parameterIndex = routeSegments.indexOf(`:${parameter}`)
+	if (parameterIndex === -1) return null
 
-	return {
-		raw: credential,
-		hash: createHash('sha256').update(credential).digest('hex'),
+	try {
+		return decodeURIComponent(pathSegments[parameterIndex])
+	} catch {
+		return null
 	}
 }
 
-function getRequesterKey(request: Request) {
-	const jwtPayload = getVerifiedJwtPayload(request)
-	if (jwtPayload?.sub) return `user:${normalizeEmail(String(jwtPayload.sub))}`
+function getDeviceCredential(
+	request: Request,
+	route: (typeof compiledApiRoutes)[number],
+) {
+	const authorization = request.headers.get('authorization')
+	if (route.route.path === 'boxes/:boxId/data') {
+		return authorization ?? request.headers.get('x-osem-device-api-key')
+	}
 
-	const credential = getRequesterCredential(request)
-	if (credential) return `credential:${credential.hash}`
-
-	return `ip:${getClientAddress(request)}`
+	return authorization
 }
 
-function getBearerToken(request: Request) {
-	const rawAuthorizationHeader = request.headers.get('authorization')
-	if (!rawAuthorizationHeader) return null
-
-	const [bearer, jwtString] = rawAuthorizationHeader.split(' ')
-	if (bearer !== 'Bearer' || !jwtString) return null
-
-	return jwtString
-}
-
-function getVerifiedJwtPayload(request: Request) {
-	const jwtString = getBearerToken(request)
-	if (!jwtString) return null
-
-	const { JWT_ALGORITHM, JWT_ISSUER, JWT_SECRET } = process.env
-	if (!JWT_ALGORITHM || !JWT_ISSUER || !JWT_SECRET) return null
+async function getVerifiedUserEmail(request: Request) {
+	if (!request.headers.get('authorization')?.startsWith('Bearer ')) return null
 
 	try {
-		const decoded = verify(jwtString, JWT_SECRET, {
-			algorithms: [JWT_ALGORITHM as Algorithm],
-			issuer: JWT_ISSUER,
-		})
-
-		return typeof decoded === 'string' ? null : decoded
+		const user = await getUserFromJwt(request)
+		return typeof user === 'string' ? null : normalizeEmail(user.email)
 	} catch {
+		// Invalid, revoked, or orphaned credentials must use the anonymous bucket.
 		return null
 	}
 }
@@ -187,39 +199,94 @@ function emailMatchesGrant(email: string, grant: ActiveRateLimitGrant) {
 	return false
 }
 
-async function resolveRateLimitTier(
-	request: Request,
-	now: number,
-): Promise<ResolvedRateLimitTier> {
-	const grants = await getCachedRateLimitGrants(now)
-	if (grants.length === 0) return DEFAULT_RATE_LIMIT_TIER
+function tierFromGrant(grant: ActiveRateLimitGrant): ResolvedRateLimitTier {
+	return {
+		name: grant.tier,
+		multiplier: RATE_LIMIT_TIERS[grant.tier].multiplier,
+	}
+}
 
-	const credential = getRequesterCredential(request)
-	if (credential) {
+function resolveRateLimitTier(
+	identity: RequesterIdentity,
+	grants: ActiveRateLimitGrant[],
+): ResolvedRateLimitTier {
+	if (identity.kind === 'credential') return tierFromGrant(identity.grant)
+
+	if (identity.kind === 'user') {
+		const matchedUserGrant = grants.find((grant) =>
+			emailMatchesGrant(identity.email, grant),
+		)
+		if (matchedUserGrant) return tierFromGrant(matchedUserGrant)
+	}
+
+	return DEFAULT_RATE_LIMIT_TIER
+}
+
+async function resolveRequesterIdentity(
+	request: Request,
+	url: URL,
+	route: (typeof compiledApiRoutes)[number],
+	grants: ActiveRateLimitGrant[],
+): Promise<RequesterIdentity> {
+	const email = await getVerifiedUserEmail(request)
+	if (email) {
+		return { key: `user:${email}`, kind: 'user', email }
+	}
+
+	for (const credential of getCredentialCandidates(request)) {
 		const matchedCredentialGrant = grants.find(
 			(grant) =>
 				grant.kind === 'credential_hash' && grant.value === credential.hash,
 		)
-		if (matchedCredentialGrant)
+		if (matchedCredentialGrant) {
 			return {
-				name: matchedCredentialGrant.tier,
-				multiplier: RATE_LIMIT_TIERS[matchedCredentialGrant.tier].multiplier,
+				key: `credential:${credential.hash}`,
+				kind: 'credential',
+				grant: matchedCredentialGrant,
 			}
+		}
 	}
 
-	const jwtPayload = getVerifiedJwtPayload(request)
-	if (jwtPayload?.sub) {
-		const matchedUserGrant = grants.find((grant) =>
-			emailMatchesGrant(String(jwtPayload.sub), grant),
-		)
-		if (matchedUserGrant)
-			return {
-				name: matchedUserGrant.tier,
-				multiplier: RATE_LIMIT_TIERS[matchedUserGrant.tier].multiplier,
+	if (isDeviceCredentialRoute(route)) {
+		const serviceKey = request.headers.get('x-service-key')
+		if (serviceKey) {
+			try {
+				if (await isValidServiceKey(serviceKey)) {
+					return {
+						key: `service:${hashCredential(serviceKey)}`,
+						kind: 'service',
+					}
+				}
+			} catch (error) {
+				console.error(
+					'Unable to validate API service key for rate limiting',
+					error,
+				)
 			}
+		}
+
+		const deviceId = getRouteParameter(route.route.path, url.pathname, 'boxId')
+		const deviceCredential = getDeviceCredential(request, route)
+		if (deviceId && deviceCredential) {
+			try {
+				const device = await getDeviceRateLimitIdentity({ id: deviceId })
+				if (
+					device?.useAuth &&
+					device.apiKey &&
+					device.apiKey === deviceCredential
+				) {
+					return { key: `device:${device.id}`, kind: 'device' }
+				}
+			} catch (error) {
+				console.error(
+					'Unable to validate device API key for rate limiting',
+					error,
+				)
+			}
+		}
 	}
 
-	return DEFAULT_RATE_LIMIT_TIER
+	return { key: 'anonymous', kind: 'anonymous' }
 }
 
 function resolveTierLimit(
@@ -262,7 +329,9 @@ export async function checkApiRateLimit(request: Request, now = Date.now()) {
 	const baseLimit = getRateLimit(route)
 	if (!baseLimit) return null
 
-	const tier = await resolveRateLimitTier(request, now)
+	const grants = await getCachedRateLimitGrants(now)
+	const identity = await resolveRequesterIdentity(request, url, route, grants)
+	const tier = resolveRateLimitTier(identity, grants)
 	const limit = resolveTierLimit(baseLimit, tier)
 
 	cleanupBuckets(now)
@@ -272,7 +341,7 @@ export async function checkApiRateLimit(request: Request, now = Date.now()) {
 		route.route.method,
 		route.route.path,
 		tier.name,
-		getRequesterKey(request),
+		identity.key,
 	].join(':')
 
 	const existing = buckets.get(key)
@@ -301,7 +370,7 @@ function rateLimitHeaders(result: RateLimitResult) {
 	return {
 		'RateLimit-Limit': String(result.limit.maxRequests),
 		'RateLimit-Remaining': String(result.remaining),
-		'RateLimit-Reset': String(Math.ceil(result.resetAt / 1000)),
+		'RateLimit-Reset': String(result.retryAfterSeconds),
 		'RateLimit-Policy': `${result.limit.maxRequests};w=${Math.ceil(
 			result.limit.windowMs / 1000,
 		)};tier="${result.tier}"`,
