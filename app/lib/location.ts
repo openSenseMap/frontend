@@ -134,6 +134,52 @@ export const locationPrivacySchema = z
 export type LocationData = z.infer<typeof locationSchema>
 export type LocationPrivacyData = z.infer<typeof locationPrivacySchema>
 
+export type LocationPrivacyDistancePair = {
+	min: LocationPrivacyData['locationPrivacyMinDistanceMeters']
+	max: LocationPrivacyData['locationPrivacyRadiusMeters']
+}
+
+export function normalizeStoredLocationPrivacy(value: {
+	locationPrivacy?: string | null
+	locationPrivacyMinDistanceMeters?: number | null
+	locationPrivacyRadiusMeters?: number | null
+}): LocationPrivacyData {
+	// Validate the distances as a masked pair even when the device currently uses
+	// exact disclosure, so switching to masked can never expose an invalid pair.
+	const storedDistancePair = locationPrivacySchema.safeParse({
+		locationPrivacy: 'masked',
+		locationPrivacyMinDistanceMeters: value.locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters: value.locationPrivacyRadiusMeters,
+	})
+
+	return {
+		locationPrivacy: value.locationPrivacy === 'masked' ? 'masked' : 'exact',
+		locationPrivacyMinDistanceMeters: storedDistancePair.success
+			? storedDistancePair.data.locationPrivacyMinDistanceMeters
+			: DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+		locationPrivacyRadiusMeters: storedDistancePair.success
+			? storedDistancePair.data.locationPrivacyRadiusMeters
+			: DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+	}
+}
+
+export function getLocationPrivacyDistanceOptions(
+	value: LocationPrivacyData,
+): readonly LocationPrivacyDistancePair[] {
+	const currentPair: LocationPrivacyDistancePair = {
+		min: value.locationPrivacyMinDistanceMeters,
+		max: value.locationPrivacyRadiusMeters,
+	}
+	const isPreset = LOCATION_PRIVACY_DISTANCE_PRESETS.some(
+		(preset) =>
+			preset.min === currentPair.min && preset.max === currentPair.max,
+	)
+
+	return isPreset
+		? LOCATION_PRIVACY_DISTANCE_PRESETS
+		: [currentPair, ...LOCATION_PRIVACY_DISTANCE_PRESETS]
+}
+
 export function validLngLat(lng: number, lat: number): boolean {
 	return locationSchema.safeParse({
 		latitude: lat,

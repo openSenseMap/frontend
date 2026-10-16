@@ -16,12 +16,10 @@ import {
 import { getUserId } from '~/services/session-service.server'
 import { BaseMap } from '~/components/base-map'
 import {
-	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
-	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
 	LOCATION_LIMITS,
-	LOCATION_PRIVACY_DISTANCE_PRESETS,
-	LOCATION_PRIVACY_RADIUS_VALUES,
+	getLocationPrivacyDistanceOptions,
 	isValidLocation,
+	normalizeStoredLocationPrivacy,
 	parseLocationFormData,
 	parseLocationPrivacyFormData,
 	validateLocationFieldErrors,
@@ -174,30 +172,16 @@ export default function EditLocation() {
 		[device.latitude, device.longitude],
 	)
 	const initialLocationPrivacy = useMemo<LocationPrivacyData>(
-		() => ({
-			locationPrivacy: device.locationPrivacy === 'masked' ? 'masked' : 'exact',
-			locationPrivacyMinDistanceMeters:
-				device.locationPrivacyMinDistanceMeters &&
-				LOCATION_PRIVACY_DISTANCE_PRESETS.some(
-					(preset) =>
-						preset.min === device.locationPrivacyMinDistanceMeters &&
-						preset.max === device.locationPrivacyRadiusMeters,
-				)
-					? (device.locationPrivacyMinDistanceMeters as LocationPrivacyData['locationPrivacyMinDistanceMeters'])
-					: DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
-			locationPrivacyRadiusMeters:
-				device.locationPrivacyRadiusMeters &&
-				LOCATION_PRIVACY_RADIUS_VALUES.includes(
-					device.locationPrivacyRadiusMeters as (typeof LOCATION_PRIVACY_RADIUS_VALUES)[number],
-				)
-					? (device.locationPrivacyRadiusMeters as LocationPrivacyData['locationPrivacyRadiusMeters'])
-					: DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
-		}),
+		() => normalizeStoredLocationPrivacy(device),
 		[
 			device.locationPrivacy,
 			device.locationPrivacyMinDistanceMeters,
 			device.locationPrivacyRadiusMeters,
 		],
+	)
+	const locationPrivacyDistanceOptions = useMemo(
+		() => getLocationPrivacyDistanceOptions(initialLocationPrivacy),
+		[initialLocationPrivacy],
 	)
 
 	const [marker, setMarker] = useState<MarkerValue>(initialLocation)
@@ -375,7 +359,7 @@ export default function EditLocation() {
 	) => {
 		const [minDistance, maxDistance] = event.target.value.split(':').map(Number)
 
-		const preset = LOCATION_PRIVACY_DISTANCE_PRESETS.find(
+		const preset = locationPrivacyDistanceOptions.find(
 			(candidate) =>
 				candidate.min === minDistance && candidate.max === maxDistance,
 		)
@@ -591,7 +575,7 @@ export default function EditLocation() {
 									aria-describedby="location-privacy-radius-error"
 									className="mt-1 w-full rounded border border-gray-200 px-2 py-1 text-base disabled:bg-gray-100 disabled:text-gray-500"
 								>
-									{LOCATION_PRIVACY_DISTANCE_PRESETS.map((preset) => (
+									{locationPrivacyDistanceOptions.map((preset) => (
 										<option
 											key={`${preset.min}:${preset.max}`}
 											value={`${preset.min}:${preset.max}`}
