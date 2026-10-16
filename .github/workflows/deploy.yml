@@ -99,6 +99,8 @@ jobs:
 
       - name: ⚡ Run vitest
         run: npm run test:coverage
+        env:
+          LOCATION_PRIVACY_SECRET: ci-only-location-privacy-secret
 
       - name: 🧐 Report Coverage
         uses: davelosert/vitest-coverage-report-action@v2

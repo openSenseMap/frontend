@@ -5,6 +5,7 @@ const schema = z.object({
 	DATABASE_URL: z.string(),
 	PG_CLIENT_SSL: z.string(),
 	SESSION_SECRET: z.string(),
+	LOCATION_PRIVACY_SECRET: z.string().trim().min(1),
 	NOMINATIM_SEARCH_API: z.string(),
 	OSEM_API_URL: z.string().url(),
 	DIRECTUS_URL: z.string().url(),
@@ -26,6 +27,10 @@ declare global {
 }
 
 export function init() {
+	if (!process.env.LOCATION_PRIVACY_SECRET?.trim()) {
+		throw new Error('LOCATION_PRIVACY_SECRET must be set for location masking')
+	}
+
 	const parsed = schema.safeParse(process.env)
 
 	if (parsed.success === false) {

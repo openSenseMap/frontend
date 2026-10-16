@@ -41,12 +41,12 @@ const EARTH_RADIUS_METERS = 6371008.8
 
 // Derive repeatable pseudo-random values from stable device/privacy inputs.
 function randomUnitValues(seed: string) {
-	const digest = createHmac(
-		'sha256',
-		process.env.SESSION_SECRET || 'openSenseMap-location-privacy',
-	)
-		.update(seed)
-		.digest()
+	const secret = process.env.LOCATION_PRIVACY_SECRET
+	if (!secret?.trim()) {
+		throw new Error('LOCATION_PRIVACY_SECRET must be set for location masking')
+	}
+
+	const digest = createHmac('sha256', secret).update(seed).digest()
 
 	const first = digest.readUInt32BE(0) / 0xffffffff
 	const second = digest.readUInt32BE(4) / 0xffffffff
