@@ -32,7 +32,8 @@ jobs:
         with:
           cache: true
           node-version-file: .node-version
-          run-install: true
+          run-install: |
+            - args: ['--frozen-lockfile']
 
       - name: 🔬 Lint
         run: vp lint
@@ -53,7 +54,8 @@ jobs:
         with:
           cache: true
           node-version-file: .node-version
-          run-install: true
+          run-install: |
+            - args: ['--frozen-lockfile']
 
       - name: 🔎 Type check
         run: vp run typecheck
@@ -80,14 +82,15 @@ jobs:
         with:
           cache: true
           node-version-file: .node-version
-          run-install: true
+          run-install: |
+            - args: ['--frozen-lockfile']
 
       - name: 🐳 Docker compose
         # we need a postgres container for runnign the tests
         # the sleep is just there to give time for postgres to get started
         run: docker compose -f docker-compose.ci.yml up -d && sleep 30
         env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres'
 
       - name: 🛠 Setup Database
         uses: nick-fields/retry@v4.0.0
