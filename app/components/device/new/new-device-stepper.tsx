@@ -30,6 +30,8 @@ import { useToast } from '~/components/ui/use-toast'
 import { DeviceModelEnum } from '~/db/schema/enum'
 import { type loader } from '~/routes/device.new'
 import {
+	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
 	locationPrivacySchema,
 	locationSchema,
 	type LocationData,
@@ -124,6 +126,12 @@ export default function NewDeviceStepper() {
 	const stepper = Stepper.useStepper()
 	const form = useForm({
 		mode: 'onTouched',
+		defaultValues: {
+			locationPrivacy: 'masked',
+			locationPrivacyMinDistanceMeters:
+				DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
+			locationPrivacyRadiusMeters: DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
+		},
 		resolver: zodResolver<
 			z.input<typeof formSchema>,
 			any,
