@@ -125,7 +125,10 @@ export async function action({ request, params }: Route.ActionArgs) {
 	const formData = await request.formData()
 
 	const parsed = parseLocationFormData(formData)
-	const privacyParsed = parseLocationPrivacyFormData(formData)
+	const privacyParsed = parseLocationPrivacyFormData(
+		formData,
+		normalizeStoredLocationPrivacy(device),
+	)
 
 	if (!parsed.success || !privacyParsed.success) {
 		return data(
