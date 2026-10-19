@@ -12,8 +12,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { BaseMap } from '~/components/base-map'
 import {
-	DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
-	DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
 	LOCATION_LIMITS,
 	LOCATION_PRIVACY_DISTANCE_PRESETS,
 	isValidLocation,
@@ -31,13 +29,11 @@ export function LocationStep() {
 	const { t } = useTranslation('newdevice')
 	const savedLatitude = watch('latitude')
 	const savedLongitude = watch('longitude')
-	const locationPrivacy = watch('locationPrivacy') ?? 'masked'
-	const locationPrivacyMinDistanceMeters =
-		watch('locationPrivacyMinDistanceMeters') ??
-		DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS
-	const locationPrivacyRadiusMeters =
-		watch('locationPrivacyRadiusMeters') ??
-		DEFAULT_LOCATION_PRIVACY_RADIUS_METERS
+	const locationPrivacy = watch('locationPrivacy')
+	const locationPrivacyMinDistanceMeters = watch(
+		'locationPrivacyMinDistanceMeters',
+	)
+	const locationPrivacyRadiusMeters = watch('locationPrivacyRadiusMeters')
 
 	const [marker, setMarker] = useState<{
 		latitude: number | string
@@ -46,33 +42,6 @@ export function LocationStep() {
 		latitude: savedLatitude || '',
 		longitude: savedLongitude || '',
 	})
-
-	useEffect(() => {
-		if (!locationPrivacy) {
-			setValue('locationPrivacy', 'masked', { shouldValidate: true })
-		}
-		if (!locationPrivacyMinDistanceMeters) {
-			setValue(
-				'locationPrivacyMinDistanceMeters',
-				DEFAULT_LOCATION_PRIVACY_MIN_DISTANCE_METERS,
-				{
-					shouldValidate: true,
-				},
-			)
-		}
-		if (!locationPrivacyRadiusMeters) {
-			setValue(
-				'locationPrivacyRadiusMeters',
-				DEFAULT_LOCATION_PRIVACY_RADIUS_METERS,
-				{ shouldValidate: true },
-			)
-		}
-	}, [
-		locationPrivacy,
-		locationPrivacyMinDistanceMeters,
-		locationPrivacyRadiusMeters,
-		setValue,
-	])
 
 	useEffect(() => {
 		if (savedLatitude !== undefined && savedLongitude !== undefined) {
