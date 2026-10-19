@@ -277,7 +277,10 @@ export function validateLocationFieldErrors(
 	return getLocationFieldErrors(parsed.error)
 }
 
-export function parseLocationPrivacyFormData(formData: FormData):
+export function parseLocationPrivacyFormData(
+	formData: FormData,
+	fallback?: LocationPrivacyData,
+):
 	| {
 			success: true
 			data: LocationPrivacyData
@@ -287,11 +290,17 @@ export function parseLocationPrivacyFormData(formData: FormData):
 			errors: LocationFieldErrors
 	  } {
 	const parsed = locationPrivacySchema.safeParse({
-		locationPrivacy: formData.get('locationPrivacy'),
-		locationPrivacyMinDistanceMeters: formData.get(
-			'locationPrivacyMinDistanceMeters',
-		),
-		locationPrivacyRadiusMeters: formData.get('locationPrivacyRadiusMeters'),
+		locationPrivacy:
+			missingLocationValueToUndefined(formData.get('locationPrivacy')) ??
+			fallback?.locationPrivacy,
+		locationPrivacyMinDistanceMeters:
+			missingLocationValueToUndefined(
+				formData.get('locationPrivacyMinDistanceMeters'),
+			) ?? fallback?.locationPrivacyMinDistanceMeters,
+		locationPrivacyRadiusMeters:
+			missingLocationValueToUndefined(
+				formData.get('locationPrivacyRadiusMeters'),
+			) ?? fallback?.locationPrivacyRadiusMeters,
 	})
 
 	if (parsed.success) {
