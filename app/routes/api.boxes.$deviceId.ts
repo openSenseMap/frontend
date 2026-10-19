@@ -47,6 +47,8 @@ import {
 const messages = {
 	conflictingSensorsAndAddons:
 		'sensors and addons can not appear in the same request.',
+	invalidLocationPrivacyDistances:
+		'Location privacy minimum distance must be smaller than the maximum radius',
 	deviceNotOwned: 'You do not own this device',
 	deviceArchived: 'Device is archived and cannot be updated',
 }
@@ -155,8 +157,7 @@ const UpdateDeviceRequestSchema = z
 			value.locationPrivacyMinDistanceMeters <
 				value.locationPrivacyRadiusMeters,
 		{
-			message:
-				'Location privacy minimum distance must be smaller than the maximum radius',
+			message: messages.invalidLocationPrivacyDistances,
 			path: ['locationPrivacyMinDistanceMeters'],
 		},
 	)
@@ -428,6 +429,22 @@ async function put(request: Request, user: User, deviceId: string) {
 
 	if (!currentDevice) {
 		return StandardResponse.notFound(apiMessages.deviceNotFound)
+	}
+
+	const effectiveLocationPrivacy =
+		body.locationPrivacy ?? currentDevice.locationPrivacy
+	const effectiveMinDistance =
+		body.locationPrivacyMinDistanceMeters ??
+		currentDevice.locationPrivacyMinDistanceMeters
+	const effectiveRadius =
+		body.locationPrivacyRadiusMeters ??
+		currentDevice.locationPrivacyRadiusMeters
+
+	if (
+		effectiveLocationPrivacy === 'masked' &&
+		effectiveMinDistance >= effectiveRadius
+	) {
+		return StandardResponse.badRequest(messages.invalidLocationPrivacyDistances)
 	}
 
 	if (body.sensors && body.addons?.add) {
