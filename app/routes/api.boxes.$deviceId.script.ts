@@ -1,17 +1,13 @@
 import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
-import { type User } from '~/db/schema'
-import { withAuthenticatedUser } from '~/lib/jwt'
 import type SketchTemplaterConstructor from '@sensebox/sketch-templater'
 import * as z from 'zod/v4'
-import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
 import { StandardResponse } from '~/lib/responses'
 import {
 	BadRequestErrorSchema,
 	badRequestResponse,
-	ForbiddenErrorSchema,
-	forbiddenResponse,
 	internalServerErrorResponse,
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
@@ -26,39 +22,48 @@ const SketchOptionsSchema = z
 			description: 'Serial port the SDS011 sensor is connected to.',
 			example: 'Serial1',
 		}),
+
 		soilDigitalPort: SketchPortSchema.optional().meta({
 			description: 'Digital port the SMT50 sensor is connected to.',
 			example: 'A',
 		}),
+
 		soundMeterPort: SketchPortSchema.optional().meta({
 			description: 'Digital port the sound level meter sensor is connected to.',
 			example: 'B',
 		}),
+
 		windSpeedPort: SketchPortSchema.optional().meta({
 			description: 'Digital port the wind speed sensor is connected to.',
 			example: 'C',
 		}),
+
 		ssid: z.string().optional().meta({
 			description: 'SSID of the Wi-Fi network.',
 			example: 'MyWiFi',
 		}),
+
 		password: z.string().optional().meta({
 			description: 'Password of the Wi-Fi network.',
 			example: 'super-secret-password',
 			format: 'password',
 		}),
+
 		devEUI: z.string().optional().meta({
 			description: 'devEUI of the TTN device.',
 			example: '70B3D57ED0000000',
 		}),
+
 		appEUI: z.string().optional().meta({
 			description: 'appEUI of the TTN application.',
 			example: '70B3D57ED0000000',
 		}),
+
 		appKey: z.string().optional().meta({
 			description: 'appKey of the TTN application.',
 			example: '00000000000000000000000000000000',
 		}),
+
 		display_enabled: z.enum(['true', 'false']).optional().meta({
 			description: 'Whether to include code for an attached OLED display.',
 			example: 'true',
@@ -82,8 +87,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Download the Arduino script for a senseBox',
 		description:
-			'Generates and returns an Arduino sketch for an owned senseBox. Requires JWT authorization. Optional sketch configuration values can be supplied as query parameters.',
-		security: [{ bearerAuth: [] }],
+			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as query parameters.',
 
 		requestParams: {
 			path: DevicePathParamsSchema,
@@ -107,11 +111,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
 
-			403: forbiddenResponse(
-				ForbiddenErrorSchema,
-				'Invalid or missing JWT authorization, or the current user does not own the device.',
-			),
-
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
 				'Internal server error.',
@@ -123,8 +122,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Devices'],
 		summary: 'Generate the Arduino script for a senseBox from form data',
 		description:
-			'Generates and returns an Arduino sketch for an owned senseBox. Requires JWT authorization. Optional sketch configuration values can be supplied as form fields.',
-		security: [{ bearerAuth: [] }],
+			'Generates and returns an Arduino sketch for the specified senseBox. Optional sketch configuration values can be supplied as form fields.',
 
 		requestParams: {
 			path: DevicePathParamsSchema,
@@ -158,11 +156,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 			),
 
 			404: notFoundResponse(NotFoundErrorSchema, 'Device not found.'),
-
-			403: forbiddenResponse(
-				ForbiddenErrorSchema,
-				'Invalid or missing JWT authorization, or the current user does not own the device.',
-			),
 
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
@@ -208,7 +201,6 @@ type Box = NonNullable<Awaited<ReturnType<typeof getDevice>>>
 type BoxForSketch = Box & {
 	_id: string
 	sensors: Array<Box['sensors'][number] & { _id: string }>
-	access_token?: string
 }
 
 const buildBoxForSketch = (
@@ -222,13 +214,11 @@ const buildBoxForSketch = (
 		_id: sensor.id,
 	})),
 	...formEntries,
-	access_token: box.useAuth ? (box.apiKey ?? undefined) : undefined,
 })
 
 const handleSketch = async (
 	deviceId: string | undefined,
 	formEntries: Record<string, FormDataEntryValue>,
-	user: User,
 ): Promise<Response> => {
 	if (deviceId === undefined) {
 		return StandardResponse.badRequest('Invalid device id specified')
@@ -238,15 +228,10 @@ const handleSketch = async (
 	if (!box) {
 		return StandardResponse.notFound('Device not found')
 	}
-	if (user.role !== 'admin' && box.userId !== user.id) {
-		return StandardResponse.forbidden('You do not own this device')
-	}
 
 	const boxForSketch = buildBoxForSketch(box, formEntries)
 	const templateSketcher = await loadSketchTemplater()
-	const sketch = templateSketcher.generateSketch(boxForSketch, {
-		encoding: '',
-	})
+	const sketch = templateSketcher.generateSketch(boxForSketch, { encoding: '' })
 	return new Response(sketch, {
 		status: 200,
 		headers: { 'Content-Type': 'text/plain; charset=utf-8' },
@@ -258,14 +243,13 @@ export const loader = async ({
 	params,
 }: Route.LoaderArgs): Promise<Response> => {
 	try {
-		return await withAuthenticatedUser(request, async (user) => {
-			const url = new URL(request.url)
-			const formEntries = Object.fromEntries(
-				url.searchParams.entries(),
-			) as Record<string, FormDataEntryValue>
+		const url = new URL(request.url)
+		const formEntries = Object.fromEntries(
+			url.searchParams.entries(),
+		) as Record<string, FormDataEntryValue>
 
-			return handleSketch(params.deviceId, formEntries, user)
-		})
+		const response = await handleSketch(params.deviceId, formEntries)
+		return response
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
@@ -278,11 +262,10 @@ export const action = async ({
 	params,
 }: Route.ActionArgs): Promise<Response> => {
 	try {
-		return await withAuthenticatedUser(request, async (user) => {
-			const formData = await request.formData()
-			const formEntries = Object.fromEntries(formData.entries())
-			return handleSketch(params.deviceId, formEntries, user)
-		})
+		const formData = await request.formData()
+		const formEntries = Object.fromEntries(formData.entries())
+		const response = await handleSketch(params.deviceId, formEntries)
+		return response
 	} catch (err: any) {
 		return StandardResponse.internalServerError(
 			err.message || 'An unexpected error occurred',
