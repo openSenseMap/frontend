@@ -937,7 +937,6 @@ interface BuildWhereClauseOptions {
 export interface FindDevicesOptions extends BuildWhereClauseOptions {
 	minimal?: string | boolean
 	full?: string | boolean
-	classify?: boolean
 	limit?: number
 	format?: 'json' | 'geojson'
 }

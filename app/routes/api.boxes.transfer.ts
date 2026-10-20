@@ -43,9 +43,9 @@ const CreateDeviceTransferRequestSchema = z
 				error: 'boxId is required',
 			}),
 
-		expiresAt: z.iso.datetime({ offset: true }).optional(),
+		expiresAt: z.iso.datetime().optional(),
 
-		date: z.iso.datetime({ offset: true }).optional().meta({
+		date: z.iso.datetime().optional().meta({
 			description:
 				'Legacy alias for `expiresAt`. Prefer `expiresAt` for new clients.',
 			deprecated: true,
@@ -88,7 +88,7 @@ const DeviceTransferDataSchema = z
 
 		token: TransferTokenSchema,
 
-		expiresAt: z.iso.datetime({ offset: true }).meta({
+		expiresAt: z.iso.datetime().meta({
 			description: 'Expiration date of the transfer token.',
 			example: '2026-05-22T12:00:00.000Z',
 		}),

@@ -143,10 +143,6 @@ export const DevicesQuerySchema = z.object({
 		.enum(['true', 'false'])
 		.default('false')
 		.transform((v) => v === 'true'),
-	classify: z
-		.enum(['true', 'false'])
-		.optional()
-		.transform((v) => v === 'true'),
 	limit: z
 		.string()
 		.default('5')

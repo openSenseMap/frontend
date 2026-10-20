@@ -83,7 +83,7 @@ const MeasurementJsonArrayItemSchema = z
 			example: 21.5,
 		}),
 
-		createdAt: z.iso.datetime({ offset: true }).optional().meta({
+		createdAt: z.iso.datetime().optional().meta({
 			description: 'Measurement timestamp. Defaults to current server time.',
 			example: '2026-05-22T12:00:00.000Z',
 		}),
@@ -100,7 +100,7 @@ const MeasurementJsonObjectValueSchema = z.union([
 	z.string(),
 	z.tuple([
 		z.union([z.number(), z.string()]),
-		z.iso.datetime({ offset: true }).optional(),
+		z.iso.datetime().optional(),
 		MeasurementLocationSchema.optional(),
 	]),
 ])

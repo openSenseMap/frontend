@@ -5,10 +5,7 @@ import {
 	type FindDevicesOptions,
 } from '~/db/models/device.server'
 import { type Sensor, type User } from '~/db/schema'
-import {
-	deriveDeviceStatus,
-	transformDeviceToApiFormat,
-} from '~/lib/device-transform'
+import { transformDeviceToApiFormat } from '~/lib/device-transform'
 import { StandardResponse } from '~/lib/responses'
 
 import * as z from 'zod/v4'
@@ -238,19 +235,9 @@ export async function loader({ request }: Route.LoaderArgs) {
 					lastMeasurementAt: latestMeasurementAt ?? timestamp,
 				}
 
-				return params.classify
-					? {
-							...responseDevice,
-							state: deriveDeviceStatus(device.sensors),
-						}
-					: responseDevice
+				return responseDevice
 			})
-		: devices.map((device) => {
-				const responseDevice = transformDeviceToApiFormat(device as any)
-				return params.classify
-					? { ...responseDevice, state: responseDevice.status }
-					: responseDevice
-			})
+		: devices.map((device) => transformDeviceToApiFormat(device as any))
 
 	if (params.format === 'geojson') {
 		const geojson = {
