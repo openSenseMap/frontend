@@ -331,20 +331,20 @@ export function createSensorWikiAliasKey(entry: {
 	return `${entry.sensorWikiPhenomenon}:${entry.sensorWikiUnit ?? ''}`
 }
 
-export function normalizeSensorWikiAliasValue(value?: string | null) {
-	return (value ?? '')
-		.trim()
-		.toLowerCase()
-		.normalize('NFKD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.replace(/µ/g, 'u')
-		.replace(/μ/g, 'u')
-		.replace(/³/g, '3')
-		.replace(/²/g, '2')
-		.replace(/°/g, '')
-		.replace(/[^a-z0-9%/]+/g, ' ')
-		.replace(/\s+/g, ' ')
-		.trim()
+export function normalizeSensorWikiAliasValue(
+  value?: string | null
+): string {
+  return (value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+	// remove accents
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/μ/g, 'u')
+    .replace(/°/g, '')
+    .replace(/[^a-z0-9%/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function parseSensorWikiAliasList(value: string) {
