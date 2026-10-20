@@ -4,7 +4,7 @@ import { useFormContext, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData } from 'react-router'
 import { type CustomDeviceSchemaUpload, type Sensor } from './sensors-info'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle, Callout } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -422,9 +422,9 @@ export function CustomDeviceConfig() {
 					)}
 
 					<div>
-						<p className="text-muted-foreground mb-4 text-sm">
-							{t('manual_sensors_sensor_wiki_hint')}
-						</p>
+							<Callout variant="tip">
+								{t('manual_sensors_sensor_wiki_hint')}
+							</Callout>
 						<div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
 							<div>
 								<Label htmlFor="phenomenon">{t('phenomenon')}</Label>
