@@ -169,7 +169,6 @@ export async function getMeasurements(
 			location: {
 				columns: {
 					id: true,
-					heightAboveGround: true,
 				},
 				extras: {
 					x: sql<number>`ST_X(${location.location})`.as('x'),

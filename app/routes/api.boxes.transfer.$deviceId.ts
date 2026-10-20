@@ -26,44 +26,29 @@ import {
 	notFoundResponse,
 } from '~/lib/openapi/errors'
 import { DevicePathParamsSchema } from '~/lib/openapi/schemas/common'
-import { type ZodOpenApiPathItemObject } from 'zod-openapi'
+import { ZodOpenApiPathItemObject } from 'zod-openapi'
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
-import { parseJsonOrFormRequest, parsePathParams } from '~/lib/request-parsing'
+import { parsePathParams } from '~/lib/request-parsing'
 
 const UpdateDeviceTransferRequestSchema = z
 	.object({
 		token: DeviceTransferTokenSchema,
 
 		expiresAt: z
-			.preprocess(
-				(value) =>
-					typeof value === 'string' && value.trim() === '' ? undefined : value,
-				z
-					.string()
-					.trim()
-					.min(1)
-					.pipe(z.iso.datetime({ offset: true }))
-					.optional(),
-			)
+			.string({
+				error: 'expiresAt is required',
+			})
+			.trim()
+			.min(1, {
+				error: 'expiresAt is required',
+			})
+			.pipe(z.iso.datetime())
 			.meta({
 				description:
 					'New expiration date for the transfer token. Must be in the future.',
 				example: '2026-05-22T12:00:00.000Z',
 			}),
-
-		date: z.iso.datetime({ offset: true }).optional().meta({
-			description: 'Legacy alias for `expiresAt`.',
-			deprecated: true,
-		}),
 	})
-	.refine((data) => data.expiresAt !== undefined || data.date !== undefined, {
-		message: 'expiresAt is required',
-		path: ['expiresAt'],
-	})
-	.transform((data) => ({
-		token: data.token,
-		expiresAt: data.expiresAt ?? data.date!,
-	}))
 	.meta({
 		id: 'UpdateDeviceTransferRequest',
 		description:
@@ -269,27 +254,43 @@ export const action = async ({ params, request }: Route.ActionArgs) => {
 
 	if (request.method !== 'PUT') return StandardResponse.methodNotAllowed('')
 
-	return handleUpdateTransfer(request, jwtResponse, deviceId)
+	const contentType = request.headers.get('content-type')
+	const isJson = contentType?.includes('application/json')
+
+	return handleUpdateTransfer(request, jwtResponse, deviceId, isJson)
 }
 
 const handleUpdateTransfer = async (
 	request: Request,
 	user: any,
 	deviceId: string,
+	isJson: boolean | undefined,
 ) => {
 	try {
-		const requestData = await parseJsonOrFormRequest(
-			request,
-			UpdateDeviceTransferRequestSchema,
-		)
+		let token: string | undefined
+		let expiresAt: string | undefined
 
-		if (requestData instanceof Response) return requestData
+		if (isJson) {
+			const body = await request.json()
+			token = body.token
+			expiresAt = body.expiresAt?.trim() || body.date
+		} else {
+			const formData = await request.formData()
+			token = formData.get('token')?.toString()
+			expiresAt =
+				formData.get('expiresAt')?.toString().trim() ||
+				formData.get('date')?.toString()
+		}
+
+		if (!token) return StandardResponse.badRequest('token is required')
+
+		if (!expiresAt) return StandardResponse.badRequest('expiresAt is required')
 
 		const updated = await updateDeviceTransferExpiration(
 			user.id,
 			deviceId,
-			requestData.token,
-			requestData.expiresAt,
+			token,
+			expiresAt,
 		)
 
 		return StandardResponse.ok({

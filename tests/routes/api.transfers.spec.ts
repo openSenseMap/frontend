@@ -88,7 +88,7 @@ describe('openSenseMap API Routes: /boxes/transfer and /boxes/claim', () => {
 			expect(response.status).toBe(201)
 			expect(body).toHaveProperty(
 				'message',
-				'Box successfully prepared for transfer',
+				'Device successfully prepared for transfer',
 			)
 			expect(body).toHaveProperty('data')
 			expect(body.data).toBeDefined()

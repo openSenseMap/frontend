@@ -46,7 +46,6 @@ export async function* streamMeasurements(
 		m.value,
 		ST_X(l.location) AS location_lng,
 		ST_Y(l.location) AS location_lat,
-		l.height_above_ground AS location_height,
 		m.location_id
 	  FROM measurement m
 	  LEFT JOIN location l ON m.location_id = l.id

@@ -32,45 +32,29 @@ import {
 
 import { parsePathParams } from '~/lib/request-parsing'
 
-const TimestampListSchema = z.preprocess((value) => {
-	const values = Array.isArray(value) ? value : [value]
-	return values.flatMap((entry) =>
-		typeof entry === 'string' ? entry.split(',') : entry,
-	)
-}, z.array(IsoDateTimeToDateSchema).min(1))
-
-const DeleteAllMeasurementsSchema = z
-	.preprocess(
-		(value) => (typeof value === 'boolean' ? String(value) : value),
-		z.enum(['true', 'false']),
-	)
-	.transform((value) => value === 'true')
-
 const DeleteSensorMeasurementsQueryParamsSchema = z
 	.object({
 		'from-date': IsoDateTimeToDateSchema.optional().meta({
 			description: 'Beginning date of the measurement range to delete.',
 			example: '2026-05-13T12:00:00.000Z',
 		}),
-		fromDate: IsoDateTimeToDateSchema.optional().meta({
-			description: 'Legacy camel-case alias for `from-date`.',
-		}),
-
 		'to-date': IsoDateTimeToDateSchema.optional().meta({
 			description: 'End date of the measurement range to delete.',
 			example: '2026-05-15T12:00:00.000Z',
 		}),
-		toDate: IsoDateTimeToDateSchema.optional().meta({
-			description: 'Legacy camel-case alias for `to-date`.',
-		}),
+		timestamps: z
+			.union([IsoDateTimeToDateSchema, z.array(IsoDateTimeToDateSchema)])
+			.optional()
+			.transform((value) => {
+				if (value === undefined) return undefined
+				return Array.isArray(value) ? value : [value]
+			})
+			.meta({
+				description: 'One or more exact measurement timestamps to delete.',
+				example: ['2026-05-15T12:00:00.000Z'],
+			}),
 
-		timestamps: TimestampListSchema.optional().meta({
-			description:
-				'One or more exact measurement timestamps to delete. Repeated and comma-separated values are accepted.',
-			example: ['2026-05-15T12:00:00.000Z'],
-		}),
-
-		deleteAllMeasurements: DeleteAllMeasurementsSchema.optional().meta({
+		deleteAllMeasurements: z.enum(['true', 'false']).optional().meta({
 			description: 'Set to `true` to delete all measurements of this sensor.',
 			example: 'true',
 		}),
@@ -78,7 +62,7 @@ const DeleteSensorMeasurementsQueryParamsSchema = z
 	.meta({
 		id: 'DeleteSensorMeasurementsQueryParams',
 		description:
-			'Query parameters selecting which measurements should be deleted. The same fields are also accepted in a JSON request body.',
+			'Query parameters selecting which measurements should be deleted.',
 	})
 
 export const openapi: ZodOpenApiPathItemObject = {
@@ -86,21 +70,12 @@ export const openapi: ZodOpenApiPathItemObject = {
 		tags: ['Measurements'],
 		summary: 'Delete measurements of a sensor',
 		description:
-			'Deletes measurements for the specified sensor. Selectors can be supplied as legacy JSON or as query parameters. Specify exactly one of `deleteAllMeasurements=true`, `timestamps`, or a complete `from-date`/`to-date` range.',
+			'Deletes measurements for the specified sensor. The measurements to delete are selected via query parameters. You can delete all measurements, delete specific timestamps, or delete a time range using `from-date` and `to-date`.',
 		security: [{ bearerAuth: [] }],
 
 		requestParams: {
 			path: DeviceSensorPathParamsSchema,
 			query: DeleteSensorMeasurementsQueryParamsSchema,
-		},
-
-		requestBody: {
-			required: false,
-			content: {
-				'application/json': {
-					schema: DeleteSensorMeasurementsQueryParamsSchema,
-				},
-			},
 		},
 
 		responses: {
@@ -141,103 +116,66 @@ export const openapi: ZodOpenApiPathItemObject = {
 	},
 }
 
-type DeleteSensorMeasurementsSelector = {
-	fromDate?: Date
-	toDate?: Date
-	timestamps?: Date[]
-	deleteAllMeasurements: boolean
-}
-
-const selectorParameterNames = [
-	'from-date',
-	'fromDate',
-	'to-date',
-	'toDate',
-	'timestamps',
-	'deleteAllMeasurements',
-] as const
-
 const parseSelectorParams = async (
 	request: Request,
-): Promise<DeleteSensorMeasurementsSelector | Response> => {
+): Promise<
+	z.output<typeof DeleteSensorMeasurementsQueryParamsSchema> | Response
+> => {
+	const url = new URL(request.url)
 	let body: Record<string, unknown> = {}
-	const contentType = request.headers.get('content-type')?.toLowerCase() ?? ''
 
-	if (contentType.includes('application/json')) {
-		const rawBody = await request.text()
-
-		if (rawBody.trim()) {
-			try {
-				const parsedBody: unknown = JSON.parse(rawBody)
-				if (
-					typeof parsedBody !== 'object' ||
-					parsedBody === null ||
-					Array.isArray(parsedBody)
-				) {
-					return StandardResponse.badRequest(
-						'JSON request body must be an object',
-					)
-				}
-				body = parsedBody as Record<string, unknown>
-			} catch {
-				return StandardResponse.badRequest('Invalid JSON in request body')
+	if (request.headers.get('content-type')?.includes('application/json')) {
+		try {
+			const parsed: unknown = await request.json()
+			if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+				body = parsed as Record<string, unknown>
 			}
+		} catch {
+			return StandardResponse.badRequest('Invalid JSON in request body')
 		}
 	}
 
-	const mergedParams: Record<string, unknown> = { ...body }
-	const searchParams = new URL(request.url).searchParams
+	const queryTimestamps = url.searchParams.getAll('timestamps')
+	const rawTimestamps =
+		queryTimestamps.length > 0 ? queryTimestamps : body.timestamps
+	const timestamps = Array.isArray(rawTimestamps)
+		? rawTimestamps.flatMap((value) =>
+				typeof value === 'string' ? value.split(',') : value,
+			)
+		: typeof rawTimestamps === 'string'
+			? rawTimestamps.split(',')
+			: rawTimestamps
+	const deleteAllMeasurements =
+		url.searchParams.get('deleteAllMeasurements') ?? body.deleteAllMeasurements
 
-	for (const name of selectorParameterNames) {
-		const values = searchParams.getAll(name)
-		if (values.length === 1) mergedParams[name] = values[0]
-		if (values.length > 1) mergedParams[name] = values
+	const params = {
+		'from-date':
+			url.searchParams.get('from-date') ??
+			url.searchParams.get('fromDate') ??
+			body['from-date'] ??
+			body.fromDate,
+		'to-date':
+			url.searchParams.get('to-date') ??
+			url.searchParams.get('toDate') ??
+			body['to-date'] ??
+			body.toDate,
+		deleteAllMeasurements:
+			deleteAllMeasurements === undefined
+				? undefined
+				: String(deleteAllMeasurements),
+		timestamps,
 	}
 
-	const parsed =
-		DeleteSensorMeasurementsQueryParamsSchema.safeParse(mergedParams)
+	const parsed = DeleteSensorMeasurementsQueryParamsSchema.safeParse(params)
 
 	if (!parsed.success) {
 		return StandardResponse.badRequest(
-			parsed.error.issues[0]?.message ?? 'Invalid deletion selector',
+			parsed.error.issues[0]?.message ?? 'Invalid query parameters',
 		)
 	}
 
-	const fromDate = parsed.data.fromDate ?? parsed.data['from-date']
-	const toDate = parsed.data.toDate ?? parsed.data['to-date']
-
-	if (Boolean(fromDate) !== Boolean(toDate)) {
-		return StandardResponse.badRequest(
-			'from-date and to-date need to be specified simultaneously',
-		)
-	}
-
-	if (fromDate && toDate && fromDate > toDate) {
-		return StandardResponse.badRequest('from-date must not be after to-date')
-	}
-
-	const deleteAllMeasurements = parsed.data.deleteAllMeasurements === true
-	const selectionCount =
-		Number(deleteAllMeasurements) +
-		Number(parsed.data.timestamps !== undefined) +
-		Number(fromDate !== undefined && toDate !== undefined)
-
-	if (selectionCount !== 1) {
-		return StandardResponse.badRequest(
-			'Specify exactly one of deleteAllMeasurements=true, timestamps, or a from-date/to-date range',
-		)
-	}
-
-	return {
-		fromDate,
-		toDate,
-		timestamps: parsed.data.timestamps,
-		deleteAllMeasurements,
-	}
+	return parsed.data
 }
-
-const formatLegacyTimestamp = (date: Date): string =>
-	date.toISOString().replace(/\.\d{3}Z$/, 'Z')
 
 export async function action({ request, params }: Route.ActionArgs) {
 	if (request.method !== 'DELETE') {
@@ -270,49 +208,36 @@ export async function action({ request, params }: Route.ActionArgs) {
 				)
 			}
 
-			const selector = await parseSelectorParams(request)
+			const queryParams = await parseSelectorParams(request)
 
-			if (selector instanceof Response) {
-				return selector
+			if (queryParams instanceof Response) {
+				return queryParams
 			}
 
-			let message: string
-			let deletedCount: number
+			let count = 0
 
-			if (selector.deleteAllMeasurements) {
-				const result = await deleteMeasurementsForSensor(parsedParams.sensorId)
-				deletedCount = result.count
-				message = `Successfully deleted all measurements of sensor ${parsedParams.sensorId}`
-			} else if (selector.timestamps) {
-				const result = await deleteSensorMeasurementsForTimes(
-					parsedParams.sensorId,
-					selector.timestamps,
-				)
-				deletedCount = result.count
-				message = `Successfully deleted ${selector.timestamps.length} measurements of sensor ${parsedParams.sensorId}`
-			} else if (selector.fromDate && selector.toDate) {
-				const result = await deleteSensorMeasurementsForTimeRange(
-					parsedParams.sensorId,
-					selector.fromDate,
-					selector.toDate,
-				)
-				deletedCount = result.count
-				message = `Successfully deleted measurements between ${formatLegacyTimestamp(selector.fromDate)} and ${formatLegacyTimestamp(selector.toDate)} of sensor ${parsedParams.sensorId}`
-			} else {
-				return StandardResponse.internalServerError(
-					'Validated deletion selector is incomplete',
-				)
-			}
-
-			if (deletedCount === 0) {
-				return StandardResponse.notFound(
-					'No matching measurements for specified query',
-				)
+			if (queryParams.deleteAllMeasurements === 'true') {
+				count = (await deleteMeasurementsForSensor(parsedParams.sensorId)).count
+			} else if (queryParams.timestamps) {
+				count = (
+					await deleteSensorMeasurementsForTimes(
+						parsedParams.sensorId,
+						queryParams.timestamps,
+					)
+				).count
+			} else if (queryParams['from-date'] && queryParams['to-date']) {
+				count = (
+					await deleteSensorMeasurementsForTimeRange(
+						parsedParams.sensorId,
+						queryParams['from-date'],
+						queryParams['to-date'],
+					)
+				).count
 			}
 
 			const responseParsed = await OkMessageResponseSchema.safeParseAsync({
 				code: 'Ok',
-				message,
+				message: `Successfully deleted ${count} of sensor ${parsedParams.sensorId}`,
 			})
 
 			if (!responseParsed.success) {

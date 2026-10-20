@@ -346,13 +346,7 @@ function serializeLegacyMeasurements(
 ) {
 	return measurements.map((measurement) => {
 		const coordinates = measurement.location
-			? [
-					measurement.location.x,
-					measurement.location.y,
-					...(measurement.location.heightAboveGround === null
-						? []
-						: [measurement.location.heightAboveGround]),
-				]
+			? [measurement.location.x, measurement.location.y]
 			: undefined
 
 		return {

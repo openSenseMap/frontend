@@ -299,10 +299,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 											[locationId.toString()]: {
 												lon: Number(measurement.location_lng),
 												lat: Number(measurement.location_lat),
-												height:
-													measurement.location_height === null
-														? undefined
-														: Number(measurement.location_height),
 											},
 										}
 									: {}

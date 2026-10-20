@@ -10,9 +10,8 @@ import {
 	measurements1monthView,
 	measurements1yearView,
 	device,
-	sensor,
 } from '~/db/schema'
-import { drizzleClient, type DatabaseTransaction } from '~/db.server'
+import { drizzleClient } from '~/db.server'
 import {
 	type MinimalDevice,
 	type MeasurementWithLocation,
@@ -112,7 +111,6 @@ export function getMeasurement(
 					// },
 					columns: {
 						id: true,
-						heightAboveGround: true,
 					},
 					extras: {
 						x: sql<number>`ST_X(${location.location})`.as('x'),
@@ -168,7 +166,6 @@ export function getMeasurement(
 				// },
 				columns: {
 					id: true,
-					heightAboveGround: true,
 				},
 				extras: {
 					x: sql<number>`ST_X(${location.location})`.as('x'),
@@ -282,7 +279,10 @@ export async function saveMeasurements(
 			locations,
 			minimalDevice.id,
 			tx,
-			{ shouldReturn: false, timing: timing },
+			{
+				shouldReturn: false,
+				timing: timing,
+			},
 		)
 		timing?.mark('insertMeasurements')
 		await updateLastMeasurements(lastMeasurements, tx, timing)
@@ -302,33 +302,20 @@ export async function insertMeasurements(measurements: any[]): Promise<void> {
 }
 
 export async function deleteMeasurementsForSensor(sensorId: string) {
-	return drizzleClient.transaction(async (tx) => {
-		const result = await tx
-			.delete(measurement)
-			.where(eq(measurement.sensorId, sensorId))
-
-		if (result.count > 0) await refreshSensorLastMeasurement(sensorId, tx)
-		return result
-	})
+	return await drizzleClient
+		.delete(measurement)
+		.where(eq(measurement.sensorId, sensorId))
 }
 
 export async function deleteSensorMeasurementsForTimes(
 	sensorId: string,
 	dates: Date[],
 ) {
-	return drizzleClient.transaction(async (tx) => {
-		const result = await tx
-			.delete(measurement)
-			.where(
-				and(
-					eq(measurement.sensorId, sensorId),
-					inArray(measurement.time, dates),
-				),
-			)
-
-		if (result.count > 0) await refreshSensorLastMeasurement(sensorId, tx)
-		return result
-	})
+	return await drizzleClient
+		.delete(measurement)
+		.where(
+			and(eq(measurement.sensorId, sensorId), inArray(measurement.time, dates)),
+		)
 }
 
 export async function deleteSensorMeasurementsForTimeRange(
@@ -336,50 +323,14 @@ export async function deleteSensorMeasurementsForTimeRange(
 	greaterThan: Date,
 	lessThan: Date,
 ) {
-	return drizzleClient.transaction(async (tx) => {
-		const result = await tx
-			.delete(measurement)
-			.where(
-				and(
-					eq(measurement.sensorId, sensorId),
-					and(
-						gt(measurement.time, greaterThan),
-						lt(measurement.time, lessThan),
-					),
-				),
-			)
-
-		if (result.count > 0) await refreshSensorLastMeasurement(sensorId, tx)
-		return result
-	})
-}
-
-async function refreshSensorLastMeasurement(
-	sensorId: string,
-	tx: DatabaseTransaction,
-) {
-	const [latest] = await tx
-		.select({
-			value: measurement.value,
-			createdAt: measurement.time,
-		})
-		.from(measurement)
-		.where(eq(measurement.sensorId, sensorId))
-		.orderBy(desc(measurement.time))
-		.limit(1)
-
-	await tx
-		.update(sensor)
-		.set({
-			lastMeasurement: latest
-				? {
-						value: latest.value ?? '',
-						createdAt: latest.createdAt.toISOString(),
-						sensorId,
-					}
-				: null,
-		})
-		.where(eq(sensor.id, sensorId))
+	return await drizzleClient
+		.delete(measurement)
+		.where(
+			and(
+				eq(measurement.sensorId, sensorId),
+				and(gt(measurement.time, greaterThan), lt(measurement.time, lessThan)),
+			),
+		)
 }
 
 export async function deleteMeasurementsForTime(date: Date) {

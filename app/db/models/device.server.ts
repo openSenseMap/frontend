@@ -147,9 +147,7 @@ export function getDevice({ id }: Pick<Device, 'id'>) {
 				},
 				with: {
 					geometry: {
-						columns: {
-							heightAboveGround: true,
-						},
+						columns: {},
 						extras: {
 							x: sql<number>`ST_X(${location.location})`.as('x'),
 							y: sql<number>`ST_Y(${location.location})`.as('y'),
@@ -258,7 +256,6 @@ export function getLocations(
 			time: deviceToLocation.time,
 			x: sql<number>`ST_X(${location.location})`.as('x'),
 			y: sql<number>`ST_Y(${location.location})`.as('y'),
-			heightAboveGround: location.heightAboveGround,
 		})
 		.from(location)
 		.innerJoin(deviceToLocation, eq(deviceToLocation.locationId, location.id))
@@ -500,10 +497,7 @@ export async function updateDevice(
 			const [existingLocation] = await tx
 				.select()
 				.from(location)
-				.where(
-					sql`ST_Equals(${location.location}, ST_GeomFromText(${pointWKT}, 4326))
-						AND ${location.heightAboveGround} IS NOT DISTINCT FROM ${heightAboveGround ?? null}`,
-				)
+				.where(sql`ST_Equals(location, ST_GeomFromText(${pointWKT}, 4326))`)
 				.limit(1)
 
 			let locationId: bigint
@@ -515,7 +509,6 @@ export async function updateDevice(
 					.insert(location)
 					.values({
 						location: sql`ST_GeomFromText(${pointWKT}, 4326)`,
-						heightAboveGround: heightAboveGround ?? null,
 					})
 					.returning()
 
@@ -670,13 +663,9 @@ export function deleteUserDevice({
 		.where(and(eq(device.id, id), eq(device.userId, userId)))
 }
 
-export function getUserDevices(
-	userId: Device['userId'],
-	options: { limit?: number; offset?: number } = {},
-) {
+export function getUserDevices(userId: Device['userId']) {
 	return drizzleClient.query.device.findMany({
 		where: (device, { eq }) => eq(device.userId, userId),
-		orderBy: (device, { asc }) => [asc(device.createdAt)],
 		columns: DEVICE_COLUMNS_WITH_SENSORS,
 		extras: {
 			heightAboveSeaLevel: calculatedDeviceHeightAboveSeaLevel().as(
@@ -686,8 +675,6 @@ export function getUserDevices(
 		with: {
 			sensors: true,
 		},
-		...(options.limit !== undefined && { limit: options.limit }),
-		...(options.offset !== undefined && { offset: options.offset }),
 	})
 }
 
@@ -1231,38 +1218,6 @@ export async function createDevice(deviceData: any, userId: string) {
 			if (!createdDevice) {
 				throw new Error('Failed to create device.')
 			}
-
-			const initialHeightAboveGround = deviceData.heightAboveGround ?? null
-			const point = sql`ST_SetSRID(ST_MakePoint(${deviceData.longitude}, ${deviceData.latitude}), 4326)`
-			let [initialLocation] = await tx
-				.insert(location)
-				.values({
-					location: point,
-					heightAboveGround: initialHeightAboveGround,
-				})
-				.onConflictDoNothing()
-				.returning()
-
-			if (!initialLocation) {
-				;[initialLocation] = await tx
-					.select()
-					.from(location)
-					.where(
-						sql`ST_Equals(${location.location}, ${point})
-							AND ${location.heightAboveGround} IS NOT DISTINCT FROM ${initialHeightAboveGround}`,
-					)
-					.limit(1)
-			}
-
-			if (!initialLocation) {
-				throw new Error('Failed to create initial device location.')
-			}
-
-			await tx.insert(deviceToLocation).values({
-				deviceId: createdDevice.id,
-				locationId: initialLocation.id,
-				time: createdDevice.createdAt,
-			})
 
 			// Add sensors in the same transaction and collect them
 			const createdSensors = []

@@ -20,7 +20,7 @@ import {
 	DevicePathParamsSchema,
 	IsoDateTimeSchema,
 } from '~/lib/openapi/schemas/common'
-import { CoordinatesWithHeightSchema } from '~/lib/openapi/schemas/location'
+import { CoordinatesSchema } from '~/lib/openapi/schemas/location'
 import {
 	DateRangeQuerySchema,
 	JsonGeoJsonFormatSchema,
@@ -32,7 +32,7 @@ const DeviceLocationsQueryParamsSchema = DateRangeQuerySchema.extend({
 
 const PointLocationSchema = z
 	.object({
-		coordinates: CoordinatesWithHeightSchema,
+		coordinates: CoordinatesSchema,
 		type: z.literal('Point'),
 		timestamp: IsoDateTimeSchema.meta({
 			description: 'Timestamp of the device location',
@@ -77,7 +77,7 @@ const GeoJsonLineStringResponseSchema = z
 		type: z.literal('Feature'),
 		geometry: z.object({
 			type: z.literal('LineString'),
-			coordinates: z.array(CoordinatesWithHeightSchema),
+			coordinates: z.array(CoordinatesSchema),
 		}),
 		properties: z.object({
 			timestamps: z.array(
@@ -169,13 +169,7 @@ export const loader = async ({
 
 		const jsonLocations = locations.map((location) => {
 			return {
-				coordinates: [
-					location.x,
-					location.y,
-					...(location.heightAboveGround === null
-						? []
-						: [location.heightAboveGround]),
-				],
+				coordinates: [location.x, location.y],
 				type: 'Point',
 				timestamp:
 					location.time instanceof Date

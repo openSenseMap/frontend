@@ -1,10 +1,6 @@
 import { type Route } from './+types/api.boxes.$deviceId.script'
 import { getDevice } from '~/db/models/device.server'
 import { type User } from '~/db/schema'
-import {
-	SketchOptionsSchema,
-	type SketchOptions,
-} from '~/lib/api-schemas/sketch-options'
 import { withAuthenticatedUser } from '~/lib/jwt'
 import type SketchTemplaterConstructor from '@sensebox/sketch-templater'
 import * as z from 'zod/v4'
@@ -20,9 +16,59 @@ import {
 	InternalServerErrorSchema,
 	NotFoundErrorSchema,
 	notFoundResponse,
-	UnprocessableContentErrorSchema,
-	unprocessableContentResponse,
 } from '~/lib/openapi/errors'
+
+const SketchPortSchema = z.enum(['A', 'B', 'C'])
+
+const SketchOptionsSchema = z
+	.object({
+		serialPort: z.enum(['Serial1', 'Serial2']).optional().meta({
+			description: 'Serial port the SDS011 sensor is connected to.',
+			example: 'Serial1',
+		}),
+		soilDigitalPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the SMT50 sensor is connected to.',
+			example: 'A',
+		}),
+		soundMeterPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the sound level meter sensor is connected to.',
+			example: 'B',
+		}),
+		windSpeedPort: SketchPortSchema.optional().meta({
+			description: 'Digital port the wind speed sensor is connected to.',
+			example: 'C',
+		}),
+		ssid: z.string().optional().meta({
+			description: 'SSID of the Wi-Fi network.',
+			example: 'MyWiFi',
+		}),
+		password: z.string().optional().meta({
+			description: 'Password of the Wi-Fi network.',
+			example: 'super-secret-password',
+			format: 'password',
+		}),
+		devEUI: z.string().optional().meta({
+			description: 'devEUI of the TTN device.',
+			example: '70B3D57ED0000000',
+		}),
+		appEUI: z.string().optional().meta({
+			description: 'appEUI of the TTN application.',
+			example: '70B3D57ED0000000',
+		}),
+		appKey: z.string().optional().meta({
+			description: 'appKey of the TTN application.',
+			example: '00000000000000000000000000000000',
+		}),
+		display_enabled: z.enum(['true', 'false']).optional().meta({
+			description: 'Whether to include code for an attached OLED display.',
+			example: 'true',
+		}),
+	})
+	.meta({
+		id: 'SketchOptions',
+		description:
+			'Optional sketch generation parameters. For GET requests these are passed as query parameters; for POST requests they are passed as form fields.',
+	})
 
 const ArduinoSketchResponseSchema = z.string().meta({
 	id: 'ArduinoSketchResponse',
@@ -64,11 +110,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 			403: forbiddenResponse(
 				ForbiddenErrorSchema,
 				'Invalid or missing JWT authorization, or the current user does not own the device.',
-			),
-
-			422: unprocessableContentResponse(
-				UnprocessableContentErrorSchema,
-				'One or more sketch options are invalid.',
 			),
 
 			500: internalServerErrorResponse(
@@ -123,11 +164,6 @@ export const openapi: ZodOpenApiPathItemObject = {
 				'Invalid or missing JWT authorization, or the current user does not own the device.',
 			),
 
-			422: unprocessableContentResponse(
-				UnprocessableContentErrorSchema,
-				'One or more sketch options are invalid.',
-			),
-
 			500: internalServerErrorResponse(
 				InternalServerErrorSchema,
 				'Internal server error.',
@@ -169,41 +205,33 @@ const loadSketchTemplater = async () => {
 }
 
 type Box = NonNullable<Awaited<ReturnType<typeof getDevice>>>
+type BoxForSketch = Box & {
+	_id: string
+	sensors: Array<Box['sensors'][number] & { _id: string }>
+	access_token?: string
+}
 
-const buildBoxForSketch = (box: Box, options: SketchOptions) => ({
+const buildBoxForSketch = (
+	box: Box,
+	formEntries: Record<string, FormDataEntryValue>,
+): BoxForSketch => ({
 	...box,
 	_id: box.id,
 	sensors: box.sensors.map((sensor) => ({
 		...sensor,
 		_id: sensor.id,
 	})),
-	sdsSerialPort: options.serialPort,
-	soilDigitalPort: options.soilDigitalPort,
-	soundMeterPort: options.soundMeterPort,
-	windSpeedPort: options.windSpeedPort,
-	ssid: options.ssid,
-	password: options.password,
-	devEUI: options.devEUI,
-	appEUI: options.appEUI,
-	appKey: options.appKey,
-	display_enabled: options.display_enabled,
-	access_token: box.useAuth ? box.apiKey : undefined,
+	...formEntries,
+	access_token: box.useAuth ? (box.apiKey ?? undefined) : undefined,
 })
 
 const handleSketch = async (
 	deviceId: string | undefined,
-	rawOptions: Record<string, FormDataEntryValue>,
+	formEntries: Record<string, FormDataEntryValue>,
 	user: User,
 ): Promise<Response> => {
 	if (deviceId === undefined) {
 		return StandardResponse.badRequest('Invalid device id specified')
-	}
-
-	const parsedOptions = SketchOptionsSchema.safeParse(rawOptions)
-	if (!parsedOptions.success) {
-		return StandardResponse.unprocessableContent(
-			parsedOptions.error.issues[0]?.message ?? 'Invalid sketch options',
-		)
 	}
 
 	const box = await getDevice({ id: deviceId })
@@ -214,9 +242,11 @@ const handleSketch = async (
 		return StandardResponse.forbidden('You do not own this device')
 	}
 
-	const boxForSketch = buildBoxForSketch(box, parsedOptions.data)
+	const boxForSketch = buildBoxForSketch(box, formEntries)
 	const templateSketcher = await loadSketchTemplater()
-	const sketch = templateSketcher.generateSketch(boxForSketch, { encoding: '' })
+	const sketch = templateSketcher.generateSketch(boxForSketch, {
+		encoding: '',
+	})
 	return new Response(sketch, {
 		status: 200,
 		headers: { 'Content-Type': 'text/plain; charset=utf-8' },

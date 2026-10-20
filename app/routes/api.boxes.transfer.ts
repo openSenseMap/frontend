@@ -24,7 +24,7 @@ import {
 } from '~/lib/openapi/errors'
 
 import { parseJsonOrFormRequest } from '~/lib/request-parsing'
-import { type User } from '~/db/schema'
+import { User } from '~/db/schema'
 import { requestContentTypeJsonOrForm } from '~/middleware/content-type-header.server'
 
 const TransferTokenSchema = z.string().min(1).meta({
@@ -102,8 +102,8 @@ const CreateDeviceTransferResponseSchema = z
 	.object({
 		code: z.literal('Created').default('Created'),
 		message: z
-			.literal('Box successfully prepared for transfer')
-			.default('Box successfully prepared for transfer'),
+			.literal('Device successfully prepared for transfer')
+			.default('Device successfully prepared for transfer'),
 		data: DeviceTransferDataSchema,
 	})
 	.meta({
@@ -133,7 +133,7 @@ export const openapi: ZodOpenApiPathItemObject = {
 
 		responses: {
 			201: {
-				description: 'Box successfully prepared for transfer.',
+				description: 'Device successfully prepared for transfer.',
 				content: {
 					'application/json': {
 						schema: CreateDeviceTransferResponseSchema,
@@ -272,7 +272,7 @@ const handleCreateTransfer = async (request: Request, user: User) => {
 		const responseParsed =
 			await CreateDeviceTransferResponseSchema.safeParseAsync({
 				code: 'Created',
-				message: 'Box successfully prepared for transfer',
+				message: 'Device successfully prepared for transfer',
 				data: {
 					...transferCode,
 					expiresAt:

@@ -75,11 +75,7 @@ export async function findOrCreateLocations(
 	let foundLocations: LocationWithId[] = []
 
 	const existingLocations = await tx
-		.select({
-			id: location.id,
-			location: location.location,
-			heightAboveGround: location.heightAboveGround,
-		})
+		.select({ id: location.id, location: location.location })
 		.from(location)
 		.where(
 			or(
@@ -88,7 +84,7 @@ export async function findOrCreateLocations(
 						sql`ST_EQUALS(
               ${location.location},
               ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)
-            ) AND ${location.heightAboveGround} IS NOT DISTINCT FROM ${newLocation.height ?? null}`,
+							)`,
 				),
 			),
 		)
@@ -97,7 +93,7 @@ export async function findOrCreateLocations(
 		return {
 			lng: location.location.x,
 			lat: location.location.y,
-			height: location.heightAboveGround ?? undefined,
+			height: undefined,
 			id: location.id,
 		}
 	})
@@ -110,8 +106,7 @@ export async function findOrCreateLocations(
 			arr.findIndex(
 				(candidate) =>
 					candidate.lng === newLocation.lng &&
-					candidate.lat === newLocation.lat &&
-					(candidate.height ?? null) === (newLocation.height ?? null),
+					candidate.lat === newLocation.lat,
 			) === index,
 	)
 
@@ -123,7 +118,6 @@ export async function findOrCreateLocations(
 						uniqueToInsert.map((newLocation) => {
 							return {
 								location: sql`ST_SetSRID(ST_MakePoint(${newLocation.lng}, ${newLocation.lat}), 4326)`,
-								heightAboveGround: newLocation.height ?? null,
 							}
 						}),
 					)
@@ -135,7 +129,7 @@ export async function findOrCreateLocations(
 		foundLocations.push({
 			lng: value.location.x,
 			lat: value.location.y,
-			height: value.heightAboveGround ?? undefined,
+			height: undefined,
 			id: value.id,
 		}),
 	)
@@ -163,9 +157,7 @@ function foundLocationEquals(
 	location: Location,
 ): boolean {
 	return (
-		foundLocation.lat === location.lat &&
-		foundLocation.lng === location.lng &&
-		(foundLocation.height ?? null) === (location.height ?? null)
+		foundLocation.lat === location.lat && foundLocation.lng === location.lng
 	)
 }
 
