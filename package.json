@@ -31,6 +31,7 @@
     "lint": "vp lint",
     "lint:fix": "vp lint --fix",
     "migrate:data": "tsx ./scripts/migration/entry.ts",
+    "migrate:sensor-wiki-backfill": "tsx ./scripts/migration/sensor-wiki-backfill-entry.ts",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
