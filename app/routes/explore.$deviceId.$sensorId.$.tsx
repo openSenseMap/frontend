@@ -179,6 +179,16 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			.slice(1)
 			.filter((sensor): sensor is SensorWithColor => sensor !== null),
 	]
+	const secondaryUnits = new Set(
+		sensors.slice(1).map((sensor) => sensor.unit ?? ''),
+	)
+
+	if (sensors.length > 2 && secondaryUnits.size > 1) {
+		throw new Response('Comparison sensors must use compatible units', {
+			status: 400,
+		})
+	}
+
 	const compareCandidates = await getComparableSensors(sensor1)
 
 	return {
