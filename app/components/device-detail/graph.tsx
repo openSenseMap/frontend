@@ -33,6 +33,15 @@ import { DateRangeFilter } from '../daterange-filter'
 import { HoveredPointContext } from '../map/layers/mobile/mobile-box-layer'
 import Spinner from '../spinner'
 import {
+	Combobox,
+	ComboboxCollection,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxInput,
+	ComboboxItem,
+	ComboboxList,
+} from '../ui/combobox'
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -58,6 +67,8 @@ ChartJS.register(
 	Filler,
 	Decimation,
 )
+
+const maxComparableDevices = 5
 
 let zoomPluginRegistration: Promise<void> | null = null
 
@@ -123,14 +134,35 @@ const GraphWithZoom = ({
 
 interface GraphProps {
 	aggregation: string
-	sensors: any[]
+	sensors: GraphSensor[]
+	compareCandidates?: {
+		id: string
+		title: string
+		unit: string | null
+		deviceId: string
+		deviceName: string
+	}[]
 	startDate?: string
 	endDate?: string
 }
 
+type GraphSensor = {
+	id: string
+	title: string
+	unit?: string | null
+	deviceId: string
+	deviceName?: string
+	device_name?: string
+	data: any[]
+	color: string
+}
+
+type CompareCandidate = NonNullable<GraphProps['compareCandidates']>[number]
+
 export default function Graph({
 	aggregation,
 	sensors,
+	compareCandidates = [],
 	startDate,
 	endDate,
 }: GraphProps) {
@@ -191,6 +223,29 @@ export default function Graph({
 	// get theme from tailwind
 	const [theme] = 'light' //useTheme();
 
+	const useSharedYAxis = useMemo(() => {
+		const firstSensor = sensors[0]
+
+		if (!firstSensor) return true
+
+		return sensors.every(
+			(sensor) =>
+				sensor.title === firstSensor.title && sensor.unit === firstSensor.unit,
+		)
+	}, [sensors])
+
+	const selectedSensorIds = useMemo(() => {
+		return new Set(sensors.map((sensor) => sensor.id))
+	}, [sensors])
+
+	const availableCompareCandidates = useMemo(() => {
+		if (sensors.length >= maxComparableDevices) return []
+
+		return compareCandidates.filter(
+			(candidate) => !selectedSensorIds.has(candidate.id),
+		)
+	}, [compareCandidates, selectedSensorIds, sensors.length])
+
 	const [chartData, setChartData] = useState(() =>
 		createMeasurementChartData(sensors, isAggregated),
 	)
@@ -224,7 +279,8 @@ export default function Graph({
 			normalized: sensors.length === 1 && !isAggregated,
 			spanGaps: false,
 			interaction: {
-				mode: 'index',
+				mode: 'nearest',
+				axis: 'x',
 				intersect: false,
 			},
 			parsing: false,
@@ -290,10 +346,15 @@ export default function Graph({
 				y1: {
 					title: {
 						display: true,
-						text: sensors[1] ? sensors[1].title + ' in ' + sensors[1].unit : '', //data.sensors[1].unit
+						text: useSharedYAxis
+							? ''
+							: sensors
+									.slice(1)
+									.map((sensor) => `${sensor.title} in ${sensor.unit}`)
+									.join(' / '),
 					},
 					// type: 'linear',
-					display: 'auto',
+					display: !useSharedYAxis && sensors.length > 1,
 					position: 'right',
 					grid: {
 						drawOnChartArea: false,
@@ -307,7 +368,8 @@ export default function Graph({
 				},
 				tooltip: {
 					enabled: true,
-					mode: 'index',
+					mode: 'nearest',
+					axis: 'x',
 					intersect: false,
 					callbacks: {
 						title: (tooltipItems: any[]) => {
@@ -327,7 +389,11 @@ export default function Graph({
 								setHoveredPointIfChanged(point.locationId)
 							}
 
-							return `${context.dataset.label}: ${context.raw.y}`
+							const unit = context.dataset.unit
+								? ` ${context.dataset.unit}`
+								: ''
+
+							return `${context.dataset.label}: ${context.raw.y}${unit}`
 						},
 					},
 				},
@@ -391,6 +457,7 @@ export default function Graph({
 		endDate,
 		theme,
 		sensors,
+		useSharedYAxis,
 		isAggregated,
 		chartData.datasets,
 		setHoveredPointIfChanged,
@@ -500,6 +567,23 @@ export default function Graph({
 		}
 	}
 
+	function createCompareLink(sensorId: string) {
+		const graphSearchParams = new URLSearchParams(searchParams.toString())
+		const query = graphSearchParams.toString()
+		const sensorIds = sensors
+			.map((sensor) => sensor.id)
+			.slice(0, maxComparableDevices - 1)
+
+		return `/explore/${sensors[0].deviceId}/${[...sensorIds, sensorId].join('/')}${query ? `?${query}` : ''}`
+	}
+
+	function handleCompareDeviceSelect(candidate: CompareCandidate | null) {
+		if (!candidate) return
+		if (sensors.length >= maxComparableDevices) return
+
+		void navigate(createCompareLink(candidate.id))
+	}
+
 	function handleDrag(_e: any, data: DraggableData) {
 		setOffsetPositionX(data.x)
 		setOffsetPositionY(data.y)
@@ -525,14 +609,48 @@ export default function Graph({
 						</div>
 					)}
 					<div
-						className="flex cursor-move items-start justify-between gap-2 px-2 pt-2"
+						className="flex cursor-move flex-wrap items-start justify-between gap-2 px-2 pt-2"
 						id="graphTop"
 					>
 						<div className="flex grow flex-wrap items-center gap-2">
 							<DateRangeFilter />
 							<AggregationFilter />
 						</div>
-						<div className="flex h-full items-start justify-end gap-4 py-2">
+						<div className="ml-auto flex h-full flex-wrap items-start justify-end gap-4 py-2">
+							{sensors.length > 0 && (
+								<Combobox<CompareCandidate>
+									items={availableCompareCandidates}
+									value={null}
+									itemToStringLabel={(candidate) => candidate?.deviceName ?? ''}
+									itemToStringValue={(candidate) => candidate?.id ?? ''}
+									onValueChange={handleCompareDeviceSelect}
+								>
+									<ComboboxInput
+										className="w-36 sm:w-44 md:w-56"
+										placeholder={t('search_device')}
+										disabled={availableCompareCandidates.length === 0}
+										showClear
+									/>
+									<ComboboxContent align="end" className="w-64">
+										<ComboboxEmpty>{t('no_matching_devices')}</ComboboxEmpty>
+										<ComboboxList>
+											<ComboboxCollection>
+												{(candidate: CompareCandidate, index: number) => (
+													<ComboboxItem
+														key={candidate.id}
+														value={candidate}
+														index={index}
+													>
+														<span className="truncate">
+															{candidate.deviceName}
+														</span>
+													</ComboboxItem>
+												)}
+											</ComboboxCollection>
+										</ComboboxList>
+									</ComboboxContent>
+								</Combobox>
+							)}
 							<Tooltip>
 								<TooltipTrigger asChild>
 									<button
@@ -600,8 +718,7 @@ export default function Graph({
 						</div>
 					</div>
 					<div className="flex min-h-0 w-full flex-1 items-center justify-center">
-						{(sensors[0].data.length === 0 && sensors[1] === undefined) ||
-						(sensors[0].data.length === 0 && sensors[1].data.length === 0) ? (
+						{sensors.every((sensor) => sensor.data.length === 0) ? (
 							<div>{t('no_data_in_range')}</div>
 						) : (
 							<ClientOnly fallback={<Spinner />}>

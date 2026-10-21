@@ -618,6 +618,11 @@ export default function Explore() {
 				feature.layer?.id === 'phenomenon-layer' ||
 				feature.layer?.id === 'devices-symbol-layer'
 			) {
+				const featureDeviceId = feature.properties?.id
+
+				if (!featureDeviceId) return
+				const query = searchParams.toString()
+
 				map.flyTo({
 					center: coordinates,
 					zoom: Math.max(map.getZoom(), 14),
@@ -626,7 +631,7 @@ export default function Explore() {
 					essential: true,
 				})
 				void navigate(
-					`/explore/${feature.properties?.id}?${searchParams.toString()}`,
+					`/explore/${String(featureDeviceId)}${query ? `?${query}` : ''}`,
 				)
 			}
 

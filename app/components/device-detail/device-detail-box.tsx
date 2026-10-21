@@ -3,11 +3,9 @@ import {
 	ChevronUp,
 	Minus,
 	Share2,
-	XSquare,
 	EllipsisVertical,
 	X,
 	ExternalLink,
-	Scale,
 	Archive,
 	Cpu,
 	Rss,
@@ -39,7 +37,7 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from '../ui/accordion'
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert'
+import { Alert, AlertDescription } from '../ui/alert'
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -71,7 +69,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { useToast } from '../ui/use-toast'
 import EntryLogs from './entry-logs'
 import ShareLink from './share-link'
-import { useGlobalCompareMode } from './useGlobalCompareMode'
 import { type SensorWithLatestMeasurement } from '~/db/schema'
 import { getArchiveLink } from '~/lib/archive-link'
 import { type loader } from '~/routes/explore.$deviceId'
@@ -111,7 +108,6 @@ export default function DeviceDetailBox() {
 	const [open, setOpen] = useState(true)
 	const [offsetPositionX, setOffsetPositionX] = useState(0)
 	const [offsetPositionY, setOffsetPositionY] = useState(0)
-	const [compareMode, setCompareMode] = useGlobalCompareMode()
 	const [refreshOn] = useState(false)
 	const [refreshSecond, setRefreshSecond] = useState(59)
 
@@ -130,6 +126,9 @@ export default function DeviceDetailBox() {
 	const { deviceId } = useParams() // Get the deviceId from the URL params
 
 	const createSensorLink = (sensorIdToBeSelected: string) => {
+		const sensorSearchParams = new URLSearchParams(searchParams.toString())
+		const query = sensorSearchParams.toString()
+		const search = query ? `?${query}` : ''
 		const lastSegment = matches[matches.length - 1]?.params?.['*']
 		if (lastSegment) {
 			const secondLastSegment = matches[matches.length - 2]?.params?.sensorId
@@ -146,13 +145,13 @@ export default function DeviceDetailBox() {
 		if (sensorIds.has(sensorIdToBeSelected) && sensorIds.size === 2) {
 			const clonedSet = new Set(sensorIds)
 			clonedSet.delete(sensorIdToBeSelected)
-			return `/explore/${deviceId}/${Array.from(clonedSet).join('/')}?${searchParams.toString()}`
+			return `/explore/${deviceId}/${Array.from(clonedSet).join('/')}${search}`
 		} else if (sensorIds.has(sensorIdToBeSelected) && sensorIds.size === 1) {
-			return `/explore/${deviceId}?${searchParams.toString()}`
+			return `/explore/${deviceId}${search}`
 		} else if (sensorIds.size === 0) {
-			return `/explore/${deviceId}/${sensorIdToBeSelected}?${searchParams.toString()}`
+			return `/explore/${deviceId}/${sensorIdToBeSelected}${search}`
 		} else if (sensorIds.size === 1) {
-			return `/explore/${deviceId}/${Array.from(sensorIds).join('/')}/${sensorIdToBeSelected}?${searchParams.toString()}`
+			return `/explore/${deviceId}/${Array.from(sensorIds).join('/')}/${sensorIdToBeSelected}${search}`
 		}
 
 		return ''
@@ -260,13 +259,6 @@ export default function DeviceDetailBox() {
 									>
 										<DropdownMenuLabel>{t('actions')}</DropdownMenuLabel>
 										<DropdownMenuSeparator />
-										<DropdownMenuItem
-											className="cursor-pointer"
-											disabled={true}
-										>
-											<Scale className="mr-2 h-4 w-4" />
-											<span>{t('compare')}</span>
-										</DropdownMenuItem>
 										<DropdownMenuItem>
 											<Archive className="mr-2 h-4 w-4" />
 											<span>
@@ -686,21 +678,6 @@ export default function DeviceDetailBox() {
 						</div>
 					</div>
 				</Draggable>
-			)}
-			{compareMode && (
-				<Alert className="absolute right-1/2 bottom-4 left-1/2 w-1/4 -translate-x-1/2 -translate-y-1/2 transform animate-pulse dark:bg-zinc-800 dark:text-zinc-200 dark:opacity-95">
-					<XSquare
-						className="h-4 w-4 cursor-pointer"
-						onClick={() => {
-							setCompareMode(!compareMode)
-							setOpen(true)
-						}}
-					/>
-					<AlertTitle>{t('compare_devices')}</AlertTitle>
-					<AlertDescription className="inline">
-						{t('choose_device_for_comparison')}
-					</AlertDescription>
-				</Alert>
 			)}
 			{!open && (
 				<div

@@ -10,8 +10,6 @@
 	"sensors": "Sensoren",
 	"sensor_order_hint": "Du möchtest die Reihenfolge der Sensoren ändern? Das geht in den",
 	"sensor_order_hint_link": "Sensoreinstellungen",
-	"compare_devices": "Geräte vergleichen",
-	"choose_device_for_comparison": "Wähle ein Gerät auf der Karte für den Vergleich.",
 	"open_device_details": "Gerätedetails öffnen",
 	"device_image": "Gerätebild",
 	"exposure": "Standort",

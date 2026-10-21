@@ -29,7 +29,11 @@ interface NormalizedAggregateMeasurement extends NormalizedMeasurement {
 }
 
 export interface MeasurementChartSensor {
+	id?: string
 	title: string
+	unit?: string | null
+	deviceId?: string
+	deviceName?: string | null
 	device_name?: string | null
 	data: MeasurementChartMeasurement[]
 	color: string
@@ -47,6 +51,9 @@ export type MeasurementChartDataset = ChartDataset<
 	backgroundColor: string
 	yAxisID: string
 	fill: boolean | number
+	unit: string
+	sensorId?: string
+	deviceName?: string
 }
 
 export interface MeasurementChartData extends ChartData<
@@ -117,13 +124,23 @@ export function createMeasurementChartData(
 	sensors: MeasurementChartSensor[],
 	isAggregated: boolean,
 ): MeasurementChartData {
+	const getDeviceName = (sensor: MeasurementChartSensor) =>
+		sensor.deviceName ?? sensor.device_name ?? sensor.deviceId
 	const includeDeviceName =
-		sensors.length === 2 && sensors[0].device_name !== sensors[1].device_name
+		new Set(sensors.map((sensor) => getDeviceName(sensor))).size > 1
+	const firstSensor = sensors[0]
+	const useSharedYAxis =
+		!firstSensor ||
+		sensors.every(
+			(sensor) =>
+				sensor.title === firstSensor.title && sensor.unit === firstSensor.unit,
+		)
 
 	return {
 		datasets: sensors.flatMap((sensor, index) => {
+			const deviceName = getDeviceName(sensor)
 			const label = includeDeviceName
-				? `${sensor.title} (${sensor.device_name})`
+				? `${sensor.title} (${deviceName})`
 				: sensor.title
 			const normalizedMeasurements = normalizeMeasurements(sensor.data)
 			const createBaseDataset = (
@@ -135,8 +152,11 @@ export function createMeasurementChartData(
 				showLine: false,
 				borderColor: sensor.color,
 				backgroundColor: sensor.color,
-				yAxisID: index === 0 ? 'y' : 'y1',
+				yAxisID: useSharedYAxis || index === 0 ? 'y' : 'y1',
 				fill: false,
+				unit: sensor.unit ?? '',
+				sensorId: sensor.id,
+				deviceName,
 			})
 
 			if (!isAggregated || sensors.length !== 1) {

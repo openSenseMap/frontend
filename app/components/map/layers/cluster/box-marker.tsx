@@ -2,8 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Box, Rocket } from 'lucide-react'
 import { useState } from 'react'
 import { type MarkerProps, Marker, useMap } from 'react-map-gl/maplibre'
-import { useMatches, useNavigate, useSearchParams } from 'react-router'
-import { useGlobalCompareMode } from '~/components/device-detail/useGlobalCompareMode'
+import { useNavigate, useSearchParams } from 'react-router'
 import { type Device } from '~/db/schema'
 import { validLngLat } from '~/lib/location'
 import { cn } from '~/lib/utils'
@@ -27,9 +26,7 @@ const getStatusColor = (device: Device) => {
 
 export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
 	const navigate = useNavigate()
-	const matches = useMatches()
 	const { osem } = useMap()
-	const [compareMode, setCompareMode] = useGlobalCompareMode()
 
 	const isFullZoom = osem && osem?.getZoom() >= 14
 
@@ -68,19 +65,13 @@ export default function BoxMarker({ device, ...props }: BoxMarkerProps) {
 						isFullZoom ? '-top-5 -left-5' : '-top-3.75 -left-3.75',
 					)}
 					onClick={() => {
-						if (searchParams.has('sensor')) {
-							searchParams.delete('sensor')
-						}
-						if (compareMode) {
-							void navigate(
-								`/explore/${matches[2].params.deviceId}/compare/${device.id}`,
-							)
-							setCompareMode(false)
-							return
-						}
+						const nextSearchParams = new URLSearchParams(
+							searchParams.toString(),
+						)
+						nextSearchParams.delete('sensor')
 						void navigate({
 							pathname: `${device.id}`,
-							search: searchParams.toString(),
+							search: nextSearchParams.toString(),
 						})
 					}}
 					onHoverStart={() => setIsHovered(true)}

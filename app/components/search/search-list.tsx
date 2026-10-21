@@ -1,8 +1,7 @@
 import { Cpu, Globe, MapPin } from 'lucide-react'
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
-import { useMatches, useNavigate, useSearchParams } from 'react-router'
-import { useGlobalCompareMode } from '../device-detail/useGlobalCompareMode'
+import { useNavigate, useSearchParams } from 'react-router'
 import { NavbarContext } from '../header/nav-bar'
 import useKeyboardNav from '../header/nav-bar/use-keyboard-nav'
 import SearchListItem from './search-list-item'
@@ -21,10 +20,8 @@ interface SearchListProps {
 export default function SearchList(props: SearchListProps) {
 	const { osem } = useMap()
 	const navigate = useNavigate()
-	const matches = useMatches()
 	const [searchParams] = useSearchParams()
 	const { setOpen } = useContext(NavbarContext)
-	const [compareMode] = useGlobalCompareMode()
 
 	const searchResultsAll = useMemo<SearchResult[]>(
 		() => [...props.searchResultsDevice, ...props.searchResultsLocation],
@@ -47,22 +44,16 @@ export default function SearchList(props: SearchListProps) {
 
 	const handleNavigate = useCallback(
 		(result: SearchResult) => {
-			const params = searchParams.toString()
-			const suffix = params ? `?${params}` : ''
+			const search = searchParams.toString()
+			const suffix = search ? `?${search}` : ''
 
 			if (result.type === 'device') {
-				const baseDeviceId = matches[2]?.params?.deviceId
-
-				if (compareMode && baseDeviceId) {
-					return `/explore/${baseDeviceId}/compare/${result.deviceId}`
-				}
-
 				return `/explore/${result.deviceId}${suffix}`
 			}
 
 			return `/explore${suffix}`
 		},
-		[searchParams, compareMode, matches],
+		[searchParams],
 	)
 
 	const selectResult = useCallback(
