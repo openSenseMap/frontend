@@ -10,6 +10,7 @@ import {
 	Cpu,
 	ArrowLeft,
 	NotepadText,
+	Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
 import { redirect, Link, Outlet, useParams, useLoaderData } from 'react-router'
