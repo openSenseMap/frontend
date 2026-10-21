@@ -12,10 +12,7 @@ import {
 	seedMissingSensorWikiAliasesFromBundledEntries,
 	updateSensorWikiAlias,
 } from '~/db/models/sensor-wiki-alias.server'
-import {
-	createSensorWikiAliasKey,
-	parseSensorWikiAliasList,
-} from '~/lib/device-schemas/sensor-wiki-aliases'
+import { parseSensorWikiAliasList } from '~/lib/device-schemas/sensor-wiki-aliases'
 
 type ActionData = {
 	error?: boolean
@@ -358,7 +355,6 @@ function ArrayTextarea({
 function parseAliasFormData(formData: FormData):
 	| {
 			value: {
-				key: string
 				sensorWikiPhenomenon: string
 				sensorWikiUnit?: string | null
 				title: string
@@ -396,10 +392,6 @@ function parseAliasFormData(formData: FormData):
 
 	return {
 		value: {
-			key: createSensorWikiAliasKey({
-				sensorWikiPhenomenon,
-				sensorWikiUnit,
-			}),
 			sensorWikiPhenomenon,
 			sensorWikiUnit,
 			title,

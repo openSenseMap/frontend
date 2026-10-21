@@ -1717,12 +1717,6 @@
           "primaryKey": true,
           "notNull": true
         },
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "sensor_wiki_phenomenon": {
           "name": "sensor_wiki_phenomenon",
           "type": "text",
@@ -1770,21 +1764,6 @@
         }
       },
       "indexes": {
-        "sensor_wiki_alias_key_unique": {
-          "name": "sensor_wiki_alias_key_unique",
-          "columns": [
-            {
-              "expression": "key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "sensor_wiki_alias_phenomenon_idx": {
           "name": "sensor_wiki_alias_phenomenon_idx",
           "columns": [
@@ -1803,7 +1782,16 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "sensor_wiki_alias_phenomenon_unit_unique": {
+          "name": "sensor_wiki_alias_phenomenon_unit_unique",
+          "nullsNotDistinct": true,
+          "columns": [
+            "sensor_wiki_phenomenon",
+            "sensor_wiki_unit"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

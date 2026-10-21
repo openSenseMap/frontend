@@ -1,5 +1,5 @@
 import { createId } from '@paralleldrive/cuid2'
-import { index, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
+import { index, pgTable, text, unique } from 'drizzle-orm/pg-core'
 import { type InferInsertModel, type InferSelectModel, sql } from 'drizzle-orm'
 
 export const sensorWikiAlias = pgTable(
@@ -9,7 +9,6 @@ export const sensorWikiAlias = pgTable(
 			.primaryKey()
 			.notNull()
 			.$defaultFn(() => createId()),
-		key: text('key').notNull(),
 		sensorWikiPhenomenon: text('sensor_wiki_phenomenon').notNull(),
 		sensorWikiUnit: text('sensor_wiki_unit'),
 		title: text('title').notNull(),
@@ -28,7 +27,9 @@ export const sensorWikiAlias = pgTable(
 			.notNull(),
 	},
 	(table) => [
-		uniqueIndex('sensor_wiki_alias_key_unique').on(table.key),
+		unique('sensor_wiki_alias_phenomenon_unit_unique')
+			.on(table.sensorWikiPhenomenon, table.sensorWikiUnit)
+			.nullsNotDistinct(),
 		index('sensor_wiki_alias_phenomenon_idx').on(table.sensorWikiPhenomenon),
 	],
 )

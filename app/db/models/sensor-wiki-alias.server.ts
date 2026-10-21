@@ -2,7 +2,6 @@ import { asc, eq } from 'drizzle-orm'
 import { drizzleClient } from '~/db.server'
 import { sensorWikiAlias } from '~/db/schema'
 import {
-	createSensorWikiAliasKey,
 	sensorWikiAliasEntries,
 	type SensorWikiAliasEntry,
 } from '~/lib/device-schemas/sensor-wiki-aliases'
@@ -18,7 +17,6 @@ export async function getSensorWikiAliasesForAdmin() {
 }
 
 export async function createSensorWikiAlias(input: {
-	key: string
 	sensorWikiPhenomenon: string
 	sensorWikiUnit?: string | null
 	title: string
@@ -33,7 +31,6 @@ export async function createSensorWikiAlias(input: {
 export async function updateSensorWikiAlias(
 	id: string,
 	input: {
-		key: string
 		sensorWikiPhenomenon: string
 		sensorWikiUnit?: string | null
 		title: string
@@ -64,7 +61,6 @@ export async function seedMissingSensorWikiAliasesFromBundledEntries() {
 		const inserted = await drizzleClient
 			.insert(sensorWikiAlias)
 			.values({
-				key: createSensorWikiAliasKey(entry),
 				sensorWikiPhenomenon: entry.sensorWikiPhenomenon,
 				sensorWikiUnit: entry.sensorWikiUnit ?? null,
 				title: entry.title,
@@ -73,7 +69,12 @@ export async function seedMissingSensorWikiAliasesFromBundledEntries() {
 				unitAliases: entry.unitAliases ?? [],
 				sensorTypeAliases: entry.sensorTypeAliases ?? [],
 			})
-			.onConflictDoNothing()
+			.onConflictDoNothing({
+				target: [
+					sensorWikiAlias.sensorWikiPhenomenon,
+					sensorWikiAlias.sensorWikiUnit,
+				],
+			})
 			.returning({ id: sensorWikiAlias.id })
 
 		insertedCount += inserted.length
