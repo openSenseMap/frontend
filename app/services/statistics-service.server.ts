@@ -33,7 +33,7 @@ export const getStatistics = async (humanReadable: boolean = false) => {
 
 	const results = await Promise.all([
 		rowCount('device'),
-		rowCount('sensor'),
+		rowCount('measurement'),
 		rowCountTimeBucket(measurement, 'time', 60000),
 	])
 

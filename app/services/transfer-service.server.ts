@@ -10,7 +10,7 @@ import {
 import { claim, type Claim, device } from '~/db/schema'
 import { drizzleClient } from '~/db.server'
 
-export const createBoxTransfer = async (
+export const createDeviceTransfer = async (
 	userId: string,
 	boxId: string,
 	expiresAtStr?: string,
@@ -49,7 +49,7 @@ export const createBoxTransfer = async (
 	return transferClaim
 }
 
-export const getBoxTransfer = async (
+export const getDeviceTransfer = async (
 	userId: string,
 	boxId: string,
 ): Promise<Claim> => {
@@ -76,7 +76,7 @@ export const getBoxTransfer = async (
 	return transfer
 }
 
-export const removeBoxTransfer = async (
+export const removeDeviceTransfer = async (
 	userId: string,
 	boxId: string,
 	token: string,
@@ -93,7 +93,7 @@ export const removeBoxTransfer = async (
 	await removeTransfer(boxId, token)
 }
 
-export const claimBox = async (userId: string, token: string) => {
+export const claimDevice = async (userId: string, token: string) => {
 	const [activeClaim] = await drizzleClient
 		.select()
 		.from(claim)
@@ -165,7 +165,7 @@ export const validateTransferParams = (
  * @param newExpiresAtStr - New expiration date as ISO string
  * @returns The updated transfer claim
  */
-export const updateBoxTransferExpiration = async (
+export const updateDeviceTransferExpiration = async (
 	userId: string,
 	boxId: string,
 	token: string,

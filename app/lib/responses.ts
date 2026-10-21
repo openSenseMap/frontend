@@ -76,6 +76,14 @@ export class StandardResponse {
 		this.errorResponse('Method Not Allowed', message, 405)
 
 	/**
+	 * Creates a response object for a conflict response
+	 * @param message The message for the response
+	 * @returns The response
+	 */
+	public static conflict = (message: string): Response =>
+		this.errorResponse('Conflict', message, 409)
+
+	/**
 	 * Creates a response object for a gone response
 	 * @param message The message for the response
 	 * @returns The response
@@ -90,6 +98,14 @@ export class StandardResponse {
 	 */
 	public static unsupportedMediaType = (message: string): Response =>
 		this.errorResponse('Unsupported Media Type', message, 415)
+
+	/**
+	 * Creates a response object for a bad gateway response
+	 * @param message The message for the response
+	 * @returns The response
+	 */
+	public static badGateway = (message: string): Response =>
+		this.errorResponse('Bad Gateway', message, 502)
 
 	/**
 	 * Creates a response object for an unprocessable entity

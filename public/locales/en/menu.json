@@ -25,5 +25,6 @@
 	"community_label": "Community Forum",
 	"devices": "Devices",
 	"measurements": "Measurements",
-	"returnToGlobeView": "Return to globe view"
+	"returnToGlobeView": "Return to globe view",
+	"zoomToMyArea": "Zoom to my area"
 }

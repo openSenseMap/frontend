@@ -35,6 +35,7 @@ import {
 	parseDeviceExposure,
 } from '~/lib/device-enums'
 import { AutosaveStatusText } from '~/components/autosave-status.text'
+import { PasswordInput } from '~/components/ui/password-input'
 
 type GeneralAutosaveValues = {
 	name: string
@@ -1001,13 +1002,12 @@ Installed on the school roof.
 							</div>
 
 							<div>
-								<input
+								<PasswordInput
 									id="passwordDelete"
 									name="passwordDelete"
-									type="password"
 									placeholder="Password"
 									ref={passwordDelRef}
-									className="w-full rounded border border-gray-200 px-2 py-2 text-base placeholder-[#999]"
+									className="text-base placeholder-[#999]"
 									value={passwordDelVal}
 									onChange={(e) => setPasswordVal(e.target.value)}
 								/>
@@ -1020,15 +1020,18 @@ Installed on the school roof.
 							</div>
 
 							<div className="flex justify-end">
-								<button
-									type="submit"
-									name="intent"
-									value="delete"
-									disabled={!passwordDelVal || isDeleteSubmitting}
-									className="mb-5 rounded border border-gray-200 px-4 py-2 text-black hover:bg-[#e6e6e6] disabled:border-[#ccc] disabled:text-[#8a8989]"
-								>
-									{isDeleteSubmitting ? t('saving') : t('delete_device')}
-								</button>
+								<div className="flex justify-end">
+									<Button
+										type="submit"
+										name="intent"
+										value="delete"
+										variant="destructive"
+										disabled={!passwordDelVal || isDeleteSubmitting}
+										className="mb-5"
+									>
+										{isDeleteSubmitting ? t('saving') : t('delete_device')}
+									</Button>
+								</div>
 							</div>
 						</Form>
 					</div>

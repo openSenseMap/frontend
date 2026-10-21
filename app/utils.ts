@@ -240,7 +240,7 @@ export function useMatchesData(
 		[matchingRoutes, id],
 	)
 
-	return route?.data as Record<string, unknown>
+	return route?.loaderData as Record<string, unknown>
 }
 
 function isUser(user: any): user is User {
@@ -263,4 +263,9 @@ export function useUser(): User {
 		)
 	}
 	return maybeUser
+}
+
+export const toIsoString = (value: Date | string | null | undefined) => {
+	if (value instanceof Date) return value.toISOString()
+	return value ?? null
 }

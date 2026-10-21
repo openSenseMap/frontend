@@ -12,6 +12,7 @@ import { action as meAction, loader as meLoader } from '~/routes/api.users.me'
 import { action } from '~/routes/api.users.refresh-auth'
 import { action as signInAction } from '~/routes/api.users.sign-in'
 import { registerUser } from '~/services/user-service.server'
+import { createSignInRequest } from './api.users.sign-in.spec'
 
 const VALID_REFRESH_AUTH_TEST_USER = generateTestUserCredentials()
 const CHANGED_PW_TO = 'some other very secure password'
@@ -93,14 +94,10 @@ describe('openSenseMap API Routes: /users', () => {
 
 			it('should allow to refresh jwt using JSON data', async () => {
 				// Arrange - First sign in to get a fresh refresh token
-				const signInParams = new URLSearchParams()
-				signInParams.append('email', VALID_REFRESH_AUTH_TEST_USER.email)
-				signInParams.append('password', VALID_REFRESH_AUTH_TEST_USER.password)
-				const signInRequest = new Request(`${BASE_URL}/users/sign-in`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: signInParams.toString(),
-				})
+				const signInRequest = createSignInRequest(
+					VALID_REFRESH_AUTH_TEST_USER.email,
+					VALID_REFRESH_AUTH_TEST_USER.password,
+				)
 
 				const signInResponse = (await signInAction({
 					request: signInRequest,
@@ -212,14 +209,10 @@ describe('openSenseMap API Routes: /users', () => {
 
 			it('should deny to use the refreshToken after signing out', async () => {
 				// Arrange
-				const signInParams = new URLSearchParams()
-				signInParams.append('email', VALID_REFRESH_AUTH_TEST_USER.email)
-				signInParams.append('password', CHANGED_PW_TO)
-				const signInRequest = new Request(`${BASE_URL}/users/sign-in`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: signInParams.toString(),
-				})
+				const signInRequest = createSignInRequest(
+					VALID_REFRESH_AUTH_TEST_USER.email,
+					CHANGED_PW_TO,
+				)
 
 				const signOutParams = new URLSearchParams()
 				const signOutRequest = new Request(`${BASE_URL}/users/sign-out`, {

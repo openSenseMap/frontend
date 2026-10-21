@@ -14,9 +14,10 @@ import { getDevice } from '~/db/models/device.server'
 import { type Claim } from '~/db/schema'
 import { getUserId } from '~/services/session-service.server'
 import {
-	getBoxTransfer,
-	createBoxTransfer,
+	getDeviceTransfer,
+	createDeviceTransfer,
 } from '~/services/transfer-service.server'
+import { useHydrated } from '~/hooks/use-hydrated'
 
 type LoaderData = {
 	deviceId: string
@@ -55,7 +56,7 @@ export async function loader({
 	let existingTransfer: Claim | null = null
 
 	try {
-		existingTransfer = await getBoxTransfer(userId, deviceId)
+		existingTransfer = await getDeviceTransfer(userId, deviceId)
 	} catch (err) {
 		const message = err instanceof Error ? err.message : ''
 		if (
@@ -121,7 +122,7 @@ export async function action({
 	expiresAt.setDate(expiresAt.getDate() + days)
 
 	try {
-		const transfer = await createBoxTransfer(
+		const transfer = await createDeviceTransfer(
 			userId,
 			deviceId,
 			expiresAt.toISOString(),
@@ -144,7 +145,8 @@ export default function EditDeviceTransfer() {
 	const { deviceName, existingTransfer } = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const navigation = useNavigation()
-	const { t } = useTranslation('device-transfer')
+	const { t, i18n } = useTranslation('device-transfer')
+	const hydrated = useHydrated()
 
 	const [copied, setCopied] = useState(false)
 
@@ -178,7 +180,7 @@ export default function EditDeviceTransfer() {
 						<div>
 							<div className="mt-2 flex justify-between">
 								<div className="space-y-0.5">
-									<h1 className="text-4xl">Transfer</h1>
+									<h1 className="text-3xl sm:text-4xl">Transfer</h1>
 									<p className="text-muted-foreground">
 										{t('transfer_device')}
 									</p>
@@ -242,7 +244,7 @@ export default function EditDeviceTransfer() {
 						<button
 							type="submit"
 							disabled={isSubmitting || existingTransfer !== null}
-							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-[12px] py-[6px] text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
+							className="my-4 block w-full rounded-[3px] border-[#d43f3a] bg-[#d9534f] px-3 py-1.5 text-[14px] leading-[1.6] text-[#fff] hover:border-[#ac2925] hover:bg-[#c9302c] disabled:cursor-not-allowed disabled:opacity-70"
 						>
 							{isSubmitting ? t('submitting') : t('submit')}
 						</button>
@@ -263,15 +265,15 @@ export default function EditDeviceTransfer() {
 							</p>
 							<p className="mt-2">{t('give_token')}</p>
 
-							<div className="mt-2 flex items-center gap-2">
-								<code className="block flex-1 rounded bg-white px-3 py-2 text-base">
+							<div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+								<code className="block min-w-0 flex-1 overflow-hidden rounded bg-white px-3 py-2 text-base text-ellipsis whitespace-nowrap">
 									{transferToken}
 								</code>
 
 								<button
 									type="button"
 									onClick={handleCopyToken}
-									className="inline-flex items-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
+									className="inline-flex shrink-0 items-center justify-center gap-2 rounded border border-green-300 bg-white px-3 py-2 text-sm text-green-800 hover:bg-green-100"
 									aria-label={copied ? t('copied') : t('copy')}
 									title={copied ? t('copied') : t('copy')}
 								>
@@ -293,10 +295,14 @@ export default function EditDeviceTransfer() {
 								<p className="mt-3 text-sm">
 									{t('valid_until')}{' '}
 									<b>
-										{new Date(transferExpiresAt).toLocaleString(t('locale'), {
-											dateStyle: 'medium',
-											timeStyle: 'short',
-										})}
+										{hydrated &&
+											new Date(transferExpiresAt).toLocaleString(
+												i18n.language,
+												{
+													dateStyle: 'medium',
+													timeStyle: 'short',
+												},
+											)}
 									</b>
 								</p>
 							) : null}

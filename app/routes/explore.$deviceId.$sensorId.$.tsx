@@ -152,30 +152,33 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 			(params['*'] ?? '')
 				.split('/')
 				.map((id) => id.trim())
-				.filter(Boolean),
+				.filter((id) => id !== '' && id !== sensorId),
 		),
 	).slice(0, maxGraphSensors - 1)
 
-	const sensors = (
-		await Promise.all(
-			[sensorId, ...comparisonSensorIds].map((id, index) =>
-				loadGraphSensor({
-					sensorId: id,
-					aggregation,
-					startDate,
-					endDate,
-					color: sensorColors[index % sensorColors.length],
-				}),
-			),
-		)
-	).filter((sensor): sensor is SensorWithColor => sensor !== null)
-
-	const sensor1 = sensors[0]
+	const loadedSensors = await Promise.all(
+		[sensorId, ...comparisonSensorIds].map((id, index) =>
+			loadGraphSensor({
+				sensorId: id,
+				aggregation,
+				startDate,
+				endDate,
+				color: sensorColors[index % sensorColors.length],
+			}),
+		),
+	)
+	const sensor1 = loadedSensors[0]
 
 	if (!sensor1) {
 		throw new Response('Sensor 1 not found', { status: 404 })
 	}
 
+	const sensors = [
+		sensor1,
+		...loadedSensors
+			.slice(1)
+			.filter((sensor): sensor is SensorWithColor => sensor !== null),
+	]
 	const compareCandidates = await getComparableSensors(sensor1)
 
 	return {
@@ -197,9 +200,15 @@ export default function SensorView() {
 				aggregation={loaderData.aggregation}
 				sensors={loaderData.sensors}
 				compareCandidates={loaderData.compareCandidates}
+				startDate={loaderData.startDate ?? undefined}
+				endDate={loaderData.endDate ?? undefined}
 			/>
 			{loaderData.device?.exposure === 'mobile' && (
-				<MobileBoxView sensors={loaderData.sensors} />
+				<MobileBoxView
+					sensors={loaderData.sensors.filter(
+						(sensor) => sensor.deviceId === loaderData.device?.id,
+					)}
+				/>
 			)}
 		</>
 	)

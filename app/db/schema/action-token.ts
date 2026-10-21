@@ -22,7 +22,12 @@ export const actionToken = pgTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 
 		purpose: text('purpose')
-			.$type<'email_confirmation' | 'password_reset' | 'tos_acceptance'>()
+			.$type<
+				| 'email_confirmation'
+				| 'password_reset'
+				| 'tos_acceptance'
+				| 'newsletter_confirmation'
+			>()
 			.notNull(),
 
 		tokenHash: text('token_hash').notNull().unique(),

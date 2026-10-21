@@ -13,6 +13,8 @@
 	"add_device_to_graph": "Add another device to this graph",
 	"search_device": "Add device...",
 	"no_matching_devices": "No other devices with this sensor found",
+	"connect_points": "Connect points",
+	"disconnect_points": "Show points",
 	"dateRanges": {
 		"last-30-minutes": "Last 30 minutes",
 		"last-1-hour": "Last 1 hour",
