@@ -21,7 +21,7 @@ const buttonVariants = cva(
 					'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50',
 				link: 'text-slate-900 underline-offset-4 hover:underline dark:text-slate-50',
 				topbar:
-					'border border-gray-100 bg-white text-black shadow-sm hover:bg-gray-100',
+					'border border-gray-100 bg-white text-black shadow-sm hover:bg-gray-100 dark:border-zinc-700 dark:bg-zinc-800/90 dark:text-zinc-200 dark:hover:bg-zinc-700/90',
 			},
 			size: {
 				default: 'h-10 px-4 py-2',
