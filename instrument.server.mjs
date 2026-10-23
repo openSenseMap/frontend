@@ -15,6 +15,9 @@ if (process.env.SENTRY_DSN) {
 		dsn: process.env.SENTRY_DSN,
 		environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
 		release: process.env.SENTRY_RELEASE,
+		integrations: [
+			Sentry.consoleLoggingIntegration({ levels: ['error'] }),
+		],
 		tracesSampleRate,
 	})
 

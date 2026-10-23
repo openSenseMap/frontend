@@ -13,7 +13,10 @@ if (window.ENV.SENTRY_DSN) {
 		dsn: window.ENV.SENTRY_DSN,
 		environment: window.ENV.SENTRY_ENVIRONMENT,
 		release: window.ENV.SENTRY_RELEASE,
-		integrations: [Sentry.reactRouterTracingIntegration()],
+		integrations: [
+			Sentry.reactRouterTracingIntegration(),
+			Sentry.consoleLoggingIntegration({ levels: ['error'] }),
+		],
 		tracesSampleRate: window.ENV.SENTRY_TRACES_SAMPLE_RATE,
 	})
 }
